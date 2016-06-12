@@ -16,8 +16,9 @@ The code is split into 2 projects:
 
 I have given this talk 5 times in 5 locations:
 
-  - [Scarborough, South Africa](http://www.meetup.com/Cape-Town-Functional-Programmers/events/229984534/)
-  - Technopark, Stellenbosch, South Africa
-  - Apeldoorn, Netherlands
-  - Amsterdam, Netherlands
-  - [Stellenbosch University, Stellenbosch, South Africa](http://www.meetup.com/Stellenbosch-Computer-Science-Meetup/events/231041690/)
+  - [Scarborough, Cape Town, South Africa](http://www.meetup.com/Cape-Town-Functional-Programmers/events/229984534/) - April 2016
+  - Technopark, Stellenbosch, South Africa - May 2016
+  - Apeldoorn, Netherlands - May 2016
+  - Amsterdam, Netherlands - May 2016
+  - [Stellenbosch University, Stellenbosch, South Africa](http://www.meetup.com/Stellenbosch-Computer-Science-Meetup/events/231041690/) - June 2016
+
