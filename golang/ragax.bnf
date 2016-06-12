@@ -1,0 +1,65 @@
+_lineComment : '/' '/' {.} '\n' ;
+
+_blockComment : '/' '*' {. | '*'} '*' '/' ;
+
+_comment : _lineComment | _blockComment ;
+
+_ws : ' ' | '\t' | '\n' | '\r' ; //whitespace
+
+_decimal_digit : '0' - '9' ;
+_upcase : 'A'-'Z' ;
+_lowcase : 'a'-'z' ;
+_id_char : _upcase | _lowcase | '_' | _decimal_digit ;
+
+_id : (_upcase | _lowcase | '_' ) {_id_char} ;
+id : _id ;
+
+!space :_comment | _ws { _ws } ;
+
+<< 
+import (
+  . "github.com/awalterschulze/ragax/golang/ast"
+  "github.com/awalterschulze/ragax/golang/token"
+)
+
+func newString(v interface{}) string {
+  t := v.(*token.Token)
+  return string(t.Lit)
+}
+>>
+
+Definitions
+	: Definition              << Defs{$0.(*Def)}, nil >>
+	| Definitions Definition  << append($0.(Defs), $1.(*Def)), nil >>
+	;
+
+Definition
+	: "#" id "=" Expr         << &Def{Name: newString($1), Expr: NewExpr($3.(*Expr))}, nil >>
+	;
+
+Expr
+	: "(" Expr "|" Expr ")"   << &Expr{
+		Type: Or, 
+		Expr: NewExpr($1.(*Expr)), 
+		Expr2: NewExpr($3.(*Expr)),
+	}, nil >>
+	| "[" Expr "," Expr "]"   << &Expr{
+		Type: Concat, 
+		Expr: NewExpr($1.(*Expr)), 
+		Expr2: NewExpr($3.(*Expr)),
+	}, nil >>
+	| "(" Expr ")" "*"        << &Expr{
+		Type: ZeroOrMore, 
+		Expr: NewExpr($1.(*Expr)),
+	}, nil >>
+	| "@" id                  << &Expr{
+		Type: Reference, 
+		Value: newString($1),
+	}, nil >>
+	| id                      << &Expr{
+		Type: Value, 
+		Value: newString($0),
+	}, nil >>
+	;
+
+
