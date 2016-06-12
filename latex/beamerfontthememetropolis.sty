@@ -1,0 +1,112 @@
+%%
+%% This is file `beamerfontthememetropolis.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% beamerfontthememetropolis.dtx  (with options: `package')
+%% ---------------------------------------------------------------------------
+%% Copyright 2015 Matthias Vogelgesang and the LaTeX community. A full list of
+%% contributors can be found at
+%% 
+%%     https://github.com/matze/mtheme/graphs/contributors
+%% 
+%% and the original template was based on the HSRM theme by Benjamin Weiss.
+%% 
+%% This work is licensed under a Creative Commons Attribution-ShareAlike 4.0
+%% International License (https://creativecommons.org/licenses/by-sa/4.0/).
+%% ---------------------------------------------------------------------------
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerfontthememetropolis}[2015/12/04 Metropolis font theme]
+\RequirePackage{etoolbox}
+\RequirePackage{ifxetex}
+\RequirePackage{ifluatex}
+\ifboolexpr{bool {xetex} or bool {luatex}}{
+  \RequirePackage[no-math]{fontspec}
+  \newcounter{fontsnotfound}
+  \newcommand{\checkfont}[1]{%
+    \suppressfontnotfounderror=1%
+    \font\x = "#1" at 10pt
+    \selectfont
+    \ifx\x\nullfont%
+      \stepcounter{fontsnotfound}%
+    \fi%
+    \suppressfontnotfounderror=0%
+  }
+
+  \newcommand{\iffontsexist}[3]{%
+    \setcounter{fontsnotfound}{0}%
+    \expandafter\forcsvlist\expandafter%
+    \checkfont\expandafter{#1}%
+    \ifnum\value{fontsnotfound}=0%
+      #2%
+    \else%
+      #3%
+    \fi%
+  }
+  \iffontsexist{Fira Sans Light,%
+                Fira Sans Light Italic,%
+                Fira Sans,%
+                Fira Sans Italic}{%
+    \setsansfont[BoldFont={Fira Sans}]{Fira Sans Light}%
+  }{%
+    \iffontsexist{Fira Sans Light OT,%
+                  Fira Sans Light Italic OT,%
+                  Fira Sans OT,%
+                  Fira Sans Italic OT}{%
+      \setsansfont[BoldFont={Fira Sans OT}]{Fira Sans Light OT}%
+    }{%
+      \PackageWarning{beamerthememetropolis}{%
+        Could not find Fira Sans fonts%
+      }
+    }
+  }
+  \iffontsexist{Fira Mono, Fira Mono Bold}{%
+    \setmonofont{Fira Mono}%
+  }{%
+    \iffontsexist{Fira Mono OT, Fira Mono Bold OT}{%
+      \setmonofont{Fira Mono OT}%
+    }{%
+      \PackageWarning{beamerthememetropolis}{%
+        Could not find Fira Mono fonts%
+      }
+    }
+  }
+  \AtBeginEnvironment{tabular}{%
+    \addfontfeature{Numbers={Monospaced}}%
+  }
+}{%
+  \PackageWarning{beamerthememetropolis}{%
+    You need to compile with XeLaTeX or LuaLaTeX to use the Fira fonts%
+  }
+}
+\setbeamerfont{title}{size=\Large,%
+                      series=\bfseries}
+\setbeamerfont{author}{size=\small}
+\setbeamerfont{date}{size=\small}
+\setbeamerfont{section title}{size=\Large,%
+                              series=\bfseries}
+\setbeamerfont{plain title}{size=\Large,%
+                            series=\bfseries}
+\setbeamerfont{block title}{size=\normalsize,%
+                            series=\bfseries}
+\setbeamerfont{block title alerted}{size=\normalsize,%
+                                    series=\bfseries}
+\setbeamerfont*{subtitle}{size=\large}
+\setbeamerfont{frametitle}{size=\large,%
+                           series=\bfseries}
+\setbeamerfont{caption}{size=\small}
+\setbeamerfont{caption name}{series=\bfseries}
+\setbeamerfont{description item}{series=\bfseries}
+\setbeamerfont{page number in head/foot}{size=\scriptsize}
+\setbeamerfont{bibliography entry author}{size=\normalsize,%
+                                          series=\normalfont}
+\setbeamerfont{bibliography entry title}{size=\normalsize,%
+                                         series=\bfseries}
+\setbeamerfont{bibliography entry location}{size=\normalsize,%
+                                            series=\normalfont}
+\setbeamerfont{bibliography entry note}{size=\small,%
+                                        series=\normalfont}
+\endinput
+%%
+%% End of file `beamerfontthememetropolis.sty'.

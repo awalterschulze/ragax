@@ -5,6 +5,10 @@ The Brzozowski Derivative is a more intuitive way to match strings using Regular
 Functional concepts such as Laziness, Memoization and Least Fixed Point can enhance the capabilities of Derivatives to even validate Recursive Regular Expressions (Context Free Grammars). 
 Finally we'll see what I use derivatives for.
 
+## Slides
+
+The slides are located in the latex folder.
+
 ## Demos
 
 The code is split into 2 projects:
