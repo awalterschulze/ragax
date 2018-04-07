@@ -1,5 +1,5 @@
 pdf:
-	(cd latex && make docker-run)
+	(cd latex && make run)
 
 regenerate:
 	(cd golang && make regenerate)

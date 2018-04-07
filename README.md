@@ -7,7 +7,7 @@ Finally we'll see what I use derivatives for.
 
 ## Slides
 
-The [slides](https://github.com/awalterschulze/ragax/raw/gh-pages/latex/ragax-ragalur-expressions.pdf) are located in the latex folder.
+The [slides](https://github.com/awalterschulze/ragax/raw/gh-pages/latex/ragax.pdf) are located in the latex folder.
 
 ## Demos
 
