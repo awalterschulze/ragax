@@ -36,6 +36,26 @@
 \maketitle
 
 \begin{frame}{Key Takeaways}
+
+\note{
+Hello
+
+Welcome to my talk on Ragax
+    
+I am going to take you through a little journey.
+    
+\begin{itemize}
+    \item Starting at Regular Expressions
+    \item Explaining what Derivatives are
+    \item Explaining what Ragas are
+    \item Expressing Ragas using derivatives
+\end{itemize}
+
+Then I'll dive into Context Free Grammars, Laziness, Memoization and Fix Points.
+    
+And finally I'll mention what I use derivatives for.
+}
+
 After this talk you should be able to:
 \begin{itemize}
 \item implement a regular expression matcher function and
@@ -50,16 +70,26 @@ You will also learn about:
 \item derivatives for context free grammars; and
 \item derivatives for trees.
 \end{itemize}
-\end{frame}
 
-\note[itemize]{
-\item point 1
-\item point 2
-}
+\end{frame}
 
 \section{Regular Expressions}
 
+\note{So lets start with Regular Expressions}
+
 \begin{frame}[fragile]{Matching a string of characters}
+
+\note{
+Just a quick review
+
+Here we see an expression that matches a string that starts with an 'a' which is followed by any number of 'a's and 'b's
+
+We can also write it like this.
+Which is the syntax we'll use in the rest of this talk.
+
+So concat is represented with a dot.
+}
+
 Using a regex we can validate a string.
 $$
 a(a|b)*
@@ -79,7 +109,10 @@ $$
 
 \section{Derivatives}
 
+\note{Ok and we're ready for derivatives}
+
 \begin{frame}{Easy}
+
 The Brzozowski derivative is the \textbf{easiest way to evaluate a regular expression}.
 
 Three functions:
@@ -92,6 +125,25 @@ Three functions:
 
 
 \begin{frame}{What is a Derivative}
+
+\note{
+What is a derivative
+
+The derivative of an expression is the expression that is left to match after the given character has been matched.
+
+So the derivative of the expression a b c with respect to a is b c, since after we have matched a we only need to match b c
+
+With an Or we have to try both alternatives so we take the derivative of both.
+
+The derivative of b c with respect to b is just c
+
+The derivative of c with respect to c is the empty string
+
+The derivative of a star with respect to a stays a star.
+
+So lets look at the formal rules.
+}
+
 The derivative of an expression is the expression that is left to match after the given character has been matched
 \cite{brzozowski1964derivatives}.
 
@@ -110,6 +162,19 @@ $\partial_a a^{*}$ & = & $a^{*}$ \\
 \end{frame}
 
 \begin{frame}{Basic Operators}
+
+\note{
+First we have a few basic operators.
+
+If we think of the set of strings that matches a regular expression, then the empty set does not match any strings.
+
+The empty string matches only the empty string.
+
+The character a matches only the character a.
+
+And then we have the rest, concat, zero or more and or
+}
+
 \begin{center}
 \begin{tabular}{l|r}
 empty set & $\emptyset$ \\
@@ -123,6 +188,15 @@ logical or & $r\ |\ s$ \\
 \end{frame}
 
 \begin{frame}[fragile]
+
+\note{
+We can represent this in haskell using an algebriac data type.
+
+But you don't need to understand the haskell to understand most of this talk.
+
+I just thought that for those who know it, it might make the math easier.
+}
+
 \frametitle{Basic Operators}
 \begin{center}
 \begin{minted}{haskell}
@@ -137,6 +211,25 @@ data Regex = EmptySet
 \end{frame}
 
 \begin{frame}[fragile]{Nullable}
+
+\note{
+Before we can explain the derivative algorithm we first need to understand the nullable function.
+
+The nullable function returns true if the set of strings that the regular expression matches includes the empty string.
+
+Ok so emptyset, no, because it does not match any string.
+
+the empty string, well uhm yes
+
+the character a, no, because it only matches the character a
+
+The concatenation of r and s, well only if r and s contain the empty string.
+
+r star, zero or more, includes zero, which is the empty string
+
+r or s, well r or s needs to include the empty string.
+}
+
 Does the expression match the empty string.
 \begin{center}
 \begin{tabular}{l c l}
@@ -151,6 +244,9 @@ $\nu(r\ |\ s)$ & = & $\nu(r)\ or\ \nu(s)$ \\
 \end{frame}
 
 \begin{frame}[fragile]{Nullable}
+
+\note{Or if you prefer the haskell}
+
 Does the expression match the empty string.
 \begin{center}
 \begin{minted}{haskell}
@@ -180,6 +276,29 @@ $\nu(c \cdot (a \cdot b)^{*})$ & = & $\invalid$ \\
 \end{frame}
 
 \begin{frame}{Derivative Rules}
+
+\note{
+Ok lets do the formal derivative rules.
+
+The derivative of the emptyset is always going to be the emptyset.
+You can't expect an expression that does not match any string to suddenly start doing so given some input.
+
+The derivative of the empty string is also always the emptyset.
+The empty string does not expect any more characters.  Its done.
+
+The derivative of a single character given the same character is the empty string.
+
+The derivative of a concatenation is either the derivative of the first expression concatenated with the original following expression 
+or
+if the first expression was nullable we can skip over it and simply take the derivative of the following expression.
+The j is just shorthand for that.
+
+The derivative of the zero or more expression is the concatenation of the derivative of the contained expression and the original zero or more expression.
+We will do an example of this soon.
+
+The or expression simply pushes its problems down to its children.
+}
+
 \begin{center}
 \begin{tabular}{l c l}
 $\partial_a \emptyset$ & = & $\emptyset$ \\
@@ -201,6 +320,9 @@ $\jmath(r)$ & = & $\epsilon$ & if $\nu(r)$ \\
 \end{frame}
 
 \begin{frame}[fragile]{Derivative Rules}
+
+\note{Maybe the haskell is easier to understand.}
+
 \begin{center}
 \begin{haskellcode}
 deriv :: Expr -> Char -> Expr
@@ -223,6 +345,25 @@ deriv (Or r s) c =
 \end{frame}
 
 \begin{frame}[fragile]{Simplification}
+
+\note{
+On the previous slide we saw that we made some simplifications.
+
+Here are some rules, but its quite easy to add your own.
+
+Any expression concatenated with the emptyset is equivalent to the emptyset.
+
+Any expression concatenated with the empty string is equivalent to the expression.
+
+Any expression ored with itself is equivalent to that expression.
+
+Any expression ored with the emptyset is equivalent to that expression.
+
+Zero or more, zero or more times, is still just zero or more.
+
+etc.
+}
+
 \begin{center}
 \begin{tabular}{lll}
 $\emptyset \cdot r$ & $\approx$ & $\emptyset$ \\
@@ -265,6 +406,38 @@ func matches(r *expr, str string) bool {
 \end{frame}
 
 \begin{frame}[fragile]{Example: Matching a sequence of notes}
+
+\note{
+Here is an example as promised.
+
+Lets say our characters are musical notes.
+And we have an expression for a c major pentatonic scale.
+
+We can take the derivative of the regular expression with respective to each input note to get a resulting regular expression.
+
+It matches if the resulting regular expression is nullable.
+
+Lets walk through it.
+
+The derivative of the initial expression with respect to c is the empty string concatenated with the zero or more expression.
+
+We could simplify that, but lets first try taking the next derivative.
+
+So the derivative of the empty string concatenated with the zero or more expression is the emptyset concatenated with the zero or more expression, but since the empty string is nullabe we also have to take the derivative of the right expression as an alternative.
+Here we can see that every musical note has become the emptyset, except the matching character which has become the empty string.
+This big Or is then concatenated with the original zero or more expression.
+So here we had to apply the concat rule, the empty string rule, zero or more rule and the or rule.
+This easily simplifies to the zero or more expression, but I'll explain this in detail soon enough.
+
+Finally we take the derivative with respect to g which is almost a repeat of the previous equation.
+
+Then we are left with the zero or more expression, which is nullable and means that our string matches the expression.
+
+Thats it.
+
+Now you know how to use derivatives.
+}
+
 Using a regex we can validate the C Major Pentatonic Scale.
 $$
 c\cdot(c|d|e|g|a)^{*}
@@ -292,7 +465,26 @@ $\nu((c|d|e|g|a)^{*})$ = \valid
 
 \plain{Questions?}
 
+\note{
+Questions
+
+This is the part of the talk that everything builds on so if you don't understand something lets quickly take some time to try and get it right.
+}
+
 \begin{frame}[fragile]{Deterministic Finite Automata}
+
+\note{
+Lets just take a quick tangent.
+
+Do you remember deterministic finite automata.
+
+Here is one for the regular expression we just evaluated.
+
+Given a c we go the accepting state.
+Then we accept any note in the pentatonic scale zero or more times.
+Otherwise the song is rejected.
+}
+
 $$
 c\cdot(c|d|e|g|a)^{*}
 $$
@@ -314,6 +506,15 @@ $$
 \end{frame}
 
 \begin{frame}[fragile]{Memoization and Simplification}
+
+\note{
+We can create the same DFA with derivatives by simply memoizing the derivative function for all possible inputs.
+
+The memoized derivative function is the transition function where the regular expressions themselves are states.
+The memoized nullable function is the accept function.
+Our simplification rules can be used for minimization.
+}
+
 \begin{center}
 \begin{tabular}{lll}
 $q_0$ & = & $c\cdot(c|d|e|g|a)^{*}$ \\
@@ -343,11 +544,30 @@ $q_2$ & = & $(c|d|e|g|a)^{*}$ \\
 \end{itemize}
 \end{frame}
 
-\section{Ragas - Indian Classical Music {Thank you: Ryan Lemmer and Antoine Van Gelder}}
+\section{Ragas - Indian Classical Music}
 
-\plain{Video https://www.youtube.com/watch?v=iElMWziZ62A}
+\note{
+Ok now onto Ragas. First I have to thank Ryan Lemmer and Antoine Van Gelder.
+They introduced me to Ragas and came up with the idea to combine it with derivatives.
+}
+
+\plain{Video https://youtu.be/iElMWziZ62A}
 
 \begin{frame}{Ragas}
+
+\note{
+Ragas are basically the indian version of western scales.
+
+They are stricter than western scales.
+
+The possible next note is not simply chosen from a set, but rather depends on the current note.
+
+Also notes are labeled a bit differently.
+
+They are labeled relatively to the start note.
+So this is simply how they are labeled if you start at c.
+}
+
 \begin{itemize}
 \item Ragas are indian version of western scales \cite{Raga2011}.
 \item Stricter than western scales.
@@ -364,6 +584,17 @@ I will skip over microtones and all the other theory, just because its not relev
 \end{frame}
 
 \begin{frame}{Example Raga}
+
+\note{
+Here is Raag Bhupali a type of Pentatonic scale
+
+Given the current note you must choose the next ascending or descending note.
+
+For example given G you can choose to play P or R next
+
+Play simple song
+}
+
 \begin{itemize}
 \item Raag Bhupali (a type of Pentatonic scale)
 \item Ascent: S R G P D S'
@@ -385,9 +616,37 @@ For example given G (e) you can choose P (g) if you want to ascend or R (d) if y
 
 \plain{Questions?}
 
+\note{
+Questions
+
+Is everyone still with us.
+After this things start to speed up a little.
+It starts to become less of a lesson and more a presentation.
+So its good to have this part solid.
+}
+
 \section{An expression for a Raga}
 
+\note{Ok, lets write an expression for a Raga}
+
 \begin{frame}{Recursive Regular Expressions}
+
+\note{
+Wait, before we start lets just quickly add one more concept.
+
+We need references for recursion and to help us split our expression into parts.
+
+It has two operators
+
+The definition of a reference
+
+and the use of the referenace
+
+The derivative of @q with respect to a is the derivative of whatever q's definition was with respect to a.
+
+Same with nullable.
+}
+
 \begin{itemize}
 \item One extra concept: Reference
 \item Two operations
@@ -403,6 +662,23 @@ $\nu(@q)$ & = & $\nu(\#q)$ \\
 \end{frame}
 
 \begin{frame}{A Grammar for a Raga}
+
+\note{
+Ok so here finally we have a raga expressed as a recursive regular expression.
+
+Our first note S is followed by its ascent or descent note and the whole expression is repeated zero or more times.
+
+The ascending note R is ascended by G or descended back to S which is just the empty string, since the termination of the expression results in the end or the repetition of the whole expression which starts with S.
+
+Same goes for the rest.
+
+G is followed by P or R
+
+P is followed by D or G
+
+and D is followed by P or a termination, since it can be followed by S.
+}
+
 \begin{itemize}
 \item Raag Bhupali (a type of Pentatonic scale)
 \item Ascent: S R G P D S'
@@ -421,9 +697,43 @@ $\#D$ & = & $D \cdot ( \varepsilon\ |\ @P )$ \\
 
 \plain{Demo}
 
+\note{
+Lets see it in action
+
+This program basically does not allow me to play a note that will make the expression go into an emptyset state.
+
+We can even add random input to create a generated piece that satisfies the raga rules.
+}
+
 \section{Context Free Grammars}
 
+\note{
+Ok back to the theory, now its going to get a little tough.
+
+Don't worry if you don't understand it all, because it took me quite a while.
+
+I think if you just absorb the overview then you are doing it right.
+
+Oh and by the way if you are not going to be pendantic then Context free grammars are just another name for recursive regular expressions.
+
+Our example from before was already a context free grammar.
+}
+
 \begin{frame}{Left Recursive Raga}
+
+\note{
+Here is our expression from before, but just written a bit differently.
+We cannot really control how a user uses our expression language, so we have to think of all cases.
+
+The definition of S is either the empty string or it is the S again followed by the expression contained in the original zero or more expression.
+
+You can see how these are equivalent.
+
+Unfortunately this causes infinite recursion for the nullable and derivative function.
+
+We can see that calculating nullable for S requires the calculation of the nullability of S.
+}
+
 \begin{center}
 \begin{tabular}{lllll}
 $\#S$ & {\color{gray}=} & {\color{gray} $(S \cdot ( @R\ |\ @D ))^{*}$} & = & $@S \cdot (S \cdot ( @R\ |\ @D ))\ |\ \varepsilon$ \\
@@ -442,6 +752,17 @@ $$
 \end{frame}
 
 \begin{frame}{Parsing with Derivatives}
+
+\note{
+We are going to solve this problem with 3 functional concepts.
+
+laziness
+
+memoization
+
+least fix points
+}
+
 This has been solved using \cite{might2011parsing} functional concepts:
 \begin{itemize}
 \item laziness - The Brake
@@ -481,6 +802,15 @@ When a function call results in calling the same function with the same inputs, 
 \end{frame}
 
 \begin{frame}{Laziness - The Brake}
+
+\note{
+Instead of storing the field values of Concat, Or and Zero or more we rather store functions that when called will return the value of the field.
+
+This allows us to avoid any recursion until the value is needed.
+
+I have used the lambda symbol here to represent a function that will return a value when called.
+}
+
 Instead of storing the field values of \textbf{concat}, \textbf{or} and \textbf{zero or more} we rather store functions that when called will return the value of the field.
 
 This allows us to avoid any recursion until the value is needed.
@@ -497,6 +827,19 @@ $\partial_n \#S$ &=& $\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ 
 \end{frame}
 
 \begin{frame}{Memoization - The Handbrake}
+
+\note{
+Nullability is relentless and won't be stopped by laziness.
+
+The point of these equatiosn are that we still need the nullability of the derivative of S to calculate the nullability of the derivative of S.
+
+Memoizing helps to close the loop.
+
+It stops the recursive execution of the derivative by only calculating the derivative once and returning the same lazy function for following executions.
+
+But its not enough.
+}
+
 Eventually nullable is going to be called.
 \begin{center}
 \begin{tabular}{lll}
@@ -532,6 +875,18 @@ $\partial_n @S$ &=& $\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \
 \end{frame}
 
 \begin{frame}{Least Fixed Point - The Gas}
+
+\note{
+Eventually nullable still needs to return a true or a false.
+
+Laziness and memoization are not enough.
+
+Here we calcuate the least fix point of nullable given a bottom of false.
+Basically, when the same lazy expression is recursively revisited, while calculating nullability, a false is returned.
+
+But lets first look at a simpler example
+}
+
 BUT Nullable is relentless and still needs to return a true or a false.
 
 Laziness and memoization are not enough.
@@ -556,6 +911,25 @@ $\nu(\lambda(\partial_n \#S))$ &=& {\color{mLightGreen} false} \\
 \end{frame}
 
 \begin{frame}{Least Fixed Point (without Laziness)}
+
+\note{
+Here is an example without laziness
+
+Basically we set a bottom of false, meaning that if we revisit an expression we return false.
+
+So nullable of $@S$ revisits $\#S$ which returns the bottom and allows us to evaluate the rest of the expression and stop the recursion.
+
+The concat returns false, since it starts with a character.
+
+The empty string returns true.
+
+And then we can see that our equation evaluates to true.
+
+We can also see that this nullability is equivalent to the nullability of the equivalent expression.
+
+-- Go back
+}
+
 \begin{center}
 \begin{tabular}{lll}
 $\nu(\#S)$ & = & $\nu(@S \cdot (S \cdot ( @R\ |\ @D ))\ |\ \varepsilon)$ \\
@@ -570,7 +944,27 @@ $\nu(\#S)$ & = & $\nu(@S \cdot (S \cdot ( @R\ |\ @D ))\ |\ \varepsilon)$ \\
 
 \plain{Demo}
 
+\note{
+Now if we do the same to our lazy expressions we get false, 
+since this is the derivative of S and the expression always expects more than one note.
+}
+
 \begin{frame}{Yacc is Dead}
+
+\note{
+Now we have a fully general Context Free Grammar validator.
+
+Yacc, Antlr, Flex, Bison, etc.  definitely still performs better, especially in worst case.
+
+But derivatives:
+
+are a lot easier to implement and understand than LR(1), LL(1), LALR parsers
+
+have a lot in common with the functional Parser pattern and
+
+can validate the full set of Context Free Grammars, not just a subset.
+}
+
 Now we have a fully general Context Free Grammar validator.
 
 Yacc, Antlr, Flex, Bison, etc.  definitely still perform better, especially in worst case.
@@ -585,7 +979,32 @@ But derivatives:
 
 \section{Trees}
 
+\note{Finally lets quickly just brush over trees}
+
 \begin{frame}{Relaxing}
+
+\note{
+RELAX NG is a schema language for XML, like XSchema and DTD.
+
+The implementation specification is done using derivatives.
+
+Some differences are that:
+
+Instead of a character as an input to the derivative function we have an XML Node.
+
+They have also included some new operators:
+Not or Compliment, Interleave and Optional
+
+With interleave the derivative can take the derivative of any one of the interleaving patterns.
+The other pattern needs to keep its original form.
+
+Nullability is easy.
+
+Not, like all the logical operators just passes its problem down.
+
+And optional is just syntactic sugar.
+}
+
 http://relaxng.org/ \cite{Relaxng2014} - RELAX NG is a schema language for XML, like XSchema and DTD.
 
 Implementation and specification are done using derivatives.
@@ -610,6 +1029,24 @@ $(r)?$ & $\approx$ & $r\ |\ \varepsilon$ \\
 \end{frame}
 
 \begin{frame}[fragile]{TreeNode}
+
+\note{
+So here is the haskell code for a derivative of a Tree which is pretty close to an XML Node.
+
+The TreeNode pattern has a name expression and a child expression.
+To keep it basic I have made the name expression just a plain string.
+
+The Node has a label string and a list of child nodes.
+
+if the name expression equals the label string we have to take the derivative of the children.
+
+otherwise we return the emptyset just like with a character.
+
+if the result of taking the derivative of the children is nullable we return the empty pattern else we return the emptyset.
+
+And nullability of a treenode is always false, just like a character.
+}
+
 \begin{haskellcode}
 deriv :: Expr -> Tree -> Expr
 deriv (TreeNode nameExpr childExpr) 
@@ -625,9 +1062,32 @@ nullable (TreeNode _ _) = False
 \end{haskellcode}
 \end{frame}
 
-\plain{Video https://www.youtube.com/watch?v=SvjSP2xYZm8}
+\plain{Video https://youtu.be/SvjSP2xYZm8}
 
 \begin{frame}{Katydid Relapse}
+
+\note{
+Finally the thing I am actually working on.
+
+Katydid is a tree toolkit, which includes relapse: a validation language based on relaxng
+
+I use derivatives and memoization to build a visual pushdown automata.
+This allows me to do matching with zero memory allocations once the automata has been compiled.
+
+I support. Json, Protobuf, XML and reflected structures, but its easy to add your own parser.
+
+I added some new operators.
+
+And, Contains and ZAny.
+
+Zany is just zero or more of anything, like .* in a regular expression.
+Which is just syntatic sugar for the compliment of the emptyset.
+
+And, again like all logical operators, just passes its problem down.
+
+And Contains is just syntatic sugar for an expression surrounded by concatenated zanys.
+}
+
 katydid.github.io - Relapse: Tree Validation Language.
 
 Uses derivatives and memoization to build Visual Pushdown Automata.
@@ -652,10 +1112,18 @@ $.r$ & $\approx$ & $* \cdot r \cdot *$ \\
 
 \plain{Playground and Tour}
 
+\note{
+I can now show you the playground.
+
+And I also have a tour.
+}
+
 \begin{frame}{References}
 
-  \bibliography{ragax}
-  \bibliographystyle{abbrv}
+\note{Thank you}
+
+\bibliography{ragax}
+\bibliographystyle{abbrv}
 
 \end{frame}
 

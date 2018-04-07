@@ -8,6 +8,7 @@ Finally we'll see what I use derivatives for.
 ## Slides
 
 The [slides](https://github.com/awalterschulze/ragax/raw/gh-pages/latex/ragax.pdf) are located in the latex folder.
+If you missed the talk you can also download the [slides with notes](https://github.com/awalterschulze/ragax/raw/gh-pages/latex/ragax-with-notes.pdf) which include my exact speech as notes.
 
 ## Demos
 
