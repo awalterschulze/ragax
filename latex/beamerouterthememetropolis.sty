@@ -17,7 +17,7 @@
 %% International License (https://creativecommons.org/licenses/by-sa/4.0/).
 %% ---------------------------------------------------------------------------
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamerouterthememetropolis}[2015/12/04 Metropolis outer theme]
+\ProvidesPackage{beamerouterthememetropolis}[2017/01/23 Metropolis outer theme]
 \RequirePackage{etoolbox}
 \RequirePackage{calc}
 \RequirePackage{pgfopts}
@@ -52,52 +52,15 @@
       }
     },
 }
-\pgfkeys{
-  /metropolis/outer/titleformat frame/.cd,
-    .is choice,
-    regular/.code={%
-      \let\@metropolis@frametitleformat\@empty%
-      \setbeamerfont{frametitle}{shape=\normalfont}%
-      \renewcommand{\@metropolis@frametitlestrut}{%
-        \vphantom{ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz}%
-      }
-    },
-    smallcaps/.code={%
-      \let\@metropolis@frametitleformat\@empty%
-      \setbeamerfont{frametitle}{shape=\scshape}%
-      \renewcommand{\@metropolis@frametitlestrut}{%
-        \vphantom{ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz}%
-      }
-    },
-    allsmallcaps/.code={%
-      \let\@metropolis@frametitleformat\MakeLowercase%
-      \setbeamerfont{frametitle}{shape=\scshape}%
-      \renewcommand{\@metropolis@frametitlestrut}{%
-        \vphantom{abcdefghijklmnopqrstuvwxyz}%
-      }
-      \PackageWarning{beamerthememetropolis}{%
-        Be aware that titleformat frame=allsmallcaps can lead to problems%
-      }
-    },
-    allcaps/.code={%
-      \let\@metropolis@frametitleformat\MakeUppercase%
-      \setbeamerfont{frametitle}{shape=\normalfont}
-      \renewcommand{\@metropolis@frametitlestrut}{%
-        \vphantom{ABCDEFGHIJKLMNOPQRSTUVWXYZ}%
-      }
-      \PackageWarning{beamerthememetropolis}{%
-        Be aware that titleformat frame=allcaps can lead to problems%
-      }
-    },
-}
-\newcommand{\@metropolis@outer@setdefaults}{
+\newcommand{\metropolis@outer@setdefaults}{
   \pgfkeys{/metropolis/outer/.cd,
     numbering=counter,
     progressbar=none,
-    titleformat frame=regular,
   }
 }
 \setbeamertemplate{navigation symbols}{}
+\defbeamertemplate{frame footer}{none}{}
+\defbeamertemplate{frame footer}{custom}[1]{ #1 }
 \defbeamertemplate{frame numbering}{none}{}
 \defbeamertemplate{frame numbering}{counter}{\insertframenumber}
 \defbeamertemplate{frame numbering}{fraction}{
@@ -106,52 +69,68 @@
 \defbeamertemplate{headline}{plain}{}
 \defbeamertemplate{footline}{plain}{%
   \begin{beamercolorbox}[wd=\textwidth, sep=3ex]{footline}%
-    \hfill%
     \usebeamerfont{page number in head/foot}%
+    \usebeamertemplate*{frame footer}
+    \hfill%
     \usebeamertemplate*{frame numbering}
   \end{beamercolorbox}%
 }
-\def\@metropolis@frametitleformat#1{#1}
-\patchcmd{\beamer@@frametitle}
-  {\beamer@ifempty{#2}{}{%
-      \gdef\insertframetitle{{#2\ifnum\beamer@autobreakcount>0\relax{}\space%
-      \usebeamertemplate*{frametitle continuation}\fi}}%
-    \gdef\beamer@frametitle{#2}%
-    \gdef\beamer@shortframetitle{#1}%
-    }}
-  {\beamer@ifempty{#2}{}{%
-      \gdef\insertframetitle{{\@metropolis@frametitleformat{#2}\ifnum%
-      \beamer@autobreakcount>0\relax{}\space%
-      \usebeamertemplate*{frametitle continuation}\fi}}%
-    \gdef\beamer@frametitle{#2}%
-    \gdef\beamer@shortframetitle{#1}%
-    }}
-  {}
-  {\PackageError{beamerouterthememetropolis}{Patching frame title failed}}
-\newlength{\@metropolis@frametitlestrut}
+\newlength{\metropolis@frametitle@padding}
+\setlength{\metropolis@frametitle@padding}{2.2ex}
+\newcommand{\metropolis@frametitlestrut@start}{
+  \rule{0pt}{\metropolis@frametitle@padding +%
+    \totalheightof{%
+      \ifcsdef{metropolis@frametitleformat}{\metropolis@frametitleformat X}{X}%
+    }%
+  }%
+}
+\newcommand{\metropolis@frametitlestrut@end}{
+  \rule[-\metropolis@frametitle@padding]{0pt}{\metropolis@frametitle@padding}
+}
 \defbeamertemplate{frametitle}{plain}{%
   \nointerlineskip%
   \begin{beamercolorbox}[%
       wd=\paperwidth,%
-      sep=1.5ex,%
+      sep=0pt,%
+      leftskip=\metropolis@frametitle@padding,%
+      rightskip=\metropolis@frametitle@padding,%
     ]{frametitle}%
-  \@metropolis@frametitlestrut\insertframetitle\@metropolis@frametitlestrut%
+  \metropolis@frametitlestrut@start%
+  \insertframetitle%
+  \nolinebreak%
+  \metropolis@frametitlestrut@end%
   \end{beamercolorbox}%
 }
+\setbeamertemplate{frametitle continuation}{%
+  \usebeamerfont{frametitle}
+  \romannumeral \insertcontinuationcount
+}
 \newlength{\metropolis@progressinheadfoot}
+\newlength{\metropolis@progressinheadfoot@linewidth}
+\setlength{\metropolis@progressinheadfoot@linewidth}{0.4pt}
 \setbeamertemplate{progress bar in head/foot}{
   \nointerlineskip
   \setlength{\metropolis@progressinheadfoot}{%
     \paperwidth * \ratio{\insertframenumber pt}{\inserttotalframenumber pt}%
   }%
   \begin{beamercolorbox}[wd=\paperwidth]{progress bar in head/foot}
+    \tikzexternaldisable%
     \begin{tikzpicture}
-      \draw[bg, fill=bg] (0,0) rectangle (\paperwidth, 0.4pt);
-      \draw[fg, fill=fg] (0,0) rectangle (\metropolis@progressinheadfoot, 0.4pt);
+      \fill[bg] (0,0) rectangle (\paperwidth, \metropolis@progressinheadfoot@linewidth);
+      \fill[fg] (0,0) rectangle (\metropolis@progressinheadfoot, \metropolis@progressinheadfoot@linewidth);
     \end{tikzpicture}%
+    \tikzexternalenable%
   \end{beamercolorbox}
 }
-\@metropolis@outer@setdefaults
+\AtBeginDocument{%
+  \apptocmd{\appendix}{%
+    \pgfkeys{%
+      /metropolis/outer/.cd,
+      numbering=none,
+      progressbar=none}
+    }{}{}
+}
+\metropolis@outer@setdefaults
 \ProcessPgfPackageOptions{/metropolis/outer}
 \endinput
 %%

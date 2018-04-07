@@ -17,21 +17,21 @@
 %% International License (https://creativecommons.org/licenses/by-sa/4.0/).
 %% ---------------------------------------------------------------------------
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamercolorthememetropolis}[2015/12/04 Metropolis color theme]
+\ProvidesPackage{beamercolorthememetropolis}[2017/01/23 Metropolis color theme]
 \RequirePackage{pgfopts}
 \pgfkeys{
   /metropolis/color/block/.cd,
     .is choice,
-    transparent/.code=\@metropolis@block@transparent,
-    fill/.code=\@metropolis@block@fill,
+    transparent/.code=\metropolis@block@transparent,
+    fill/.code=\metropolis@block@fill,
 }
 \pgfkeys{
   /metropolis/color/background/.cd,
     .is choice,
-    dark/.code=\@metropolis@colors@dark,
-    light/.code=\@metropolis@colors@light,
+    dark/.code=\metropolis@colors@dark,
+    light/.code=\metropolis@colors@light,
 }
-\newcommand{\@metropolis@color@setdefaults}{
+\newcommand{\metropolis@color@setdefaults}{
   \pgfkeys{/metropolis/color/.cd,
     background=light,
     block=transparent,
@@ -41,13 +41,14 @@
 \definecolor{mDarkTeal}{HTML}{23373b}
 \definecolor{mLightBrown}{HTML}{EB811B}
 \definecolor{mLightGreen}{HTML}{14B03D}
-\newcommand{\@metropolis@colors@dark}{
+\newcommand{\metropolis@colors@dark}{
   \setbeamercolor{normal text}{%
     fg=black!2,
     bg=mDarkTeal
   }
+  \usebeamercolor[fg]{normal text}
 }
-\newcommand{\@metropolis@colors@light}{
+\newcommand{\metropolis@colors@light}{
   \setbeamercolor{normal text}{%
     fg=mDarkTeal,
     bg=black!2
@@ -90,14 +91,25 @@
   use=progress bar,
   parent=progress bar
 }
-\newcommand{\@metropolis@block@transparent}{
-  \setbeamercolor{block title}{use=normal text, parent=normal text}
+\newcommand{\metropolis@block@transparent}{
+  \setbeamercolor{block title}{%
+    use=normal text,
+    fg=normal text.fg,
+    bg=
+  }
+  \setbeamercolor{block body}{
+    bg=
+  }
 }
-\newcommand{\@metropolis@block@fill}{
+\newcommand{\metropolis@block@fill}{
   \setbeamercolor{block title}{%
     use=normal text,
     fg=normal text.fg,
     bg=normal text.bg!80!fg
+  }
+  \setbeamercolor{block body}{
+    use={block title, normal text},
+    bg=block title.bg!50!normal text.bg
   }
 }
 \setbeamercolor{block title alerted}{%
@@ -112,13 +124,13 @@
 }
 \setbeamercolor{block body alerted}{use=block body, parent=block body}
 \setbeamercolor{block body example}{use=block body, parent=block body}
-\setbeamercolor{block body}{
-  use={block title, normal text},
-  bg=block title.bg!50!normal text.bg
-}
 \setbeamercolor{footnote}{fg=normal text.fg!90}
 \setbeamercolor{footnote mark}{fg=.}
-\@metropolis@color@setdefaults
+\setbeamercolor{bibliography entry author}{fg=, bg=}
+\setbeamercolor{bibliography entry title}{fg=, bg=}
+\setbeamercolor{bibliography entry location}{fg=, bg=}
+\setbeamercolor{bibliography entry note}{fg=, bg=}
+\metropolis@color@setdefaults
 \ProcessPgfPackageOptions{/metropolis/color}
 \mode<all>
 \endinput
