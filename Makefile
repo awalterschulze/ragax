@@ -1,5 +1,6 @@
-pdf:
-	(cd latex && make run)
+slide:
+	(cd latex && make build)
+	(cd latex && make build-with-notes)
 
 regenerate:
 	(cd golang && make regenerate)
