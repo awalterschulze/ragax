@@ -18,7 +18,7 @@ The code is split into 2 projects:
 
 ## Locations
 
-I have given this talk 5 times in 5 locations:
+I have given this talk 5 times:
 
   - [Scarborough, Cape Town, South Africa](http://www.meetup.com/Cape-Town-Functional-Programmers/events/229984534/) - April 2016
   - Technopark, Stellenbosch, South Africa - May 2016
