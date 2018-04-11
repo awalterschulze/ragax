@@ -23,7 +23,7 @@
 
 \title{Ragax: Ragalur Expressions}
 \subtitle{Using derivatives to validate Indian Classical Music}
-\date{5 May 2018}
+\date{2 May 2018}
 \author{Walter Schulze}
 \institute{Amsterdam Functional Programming Meetup}
 
@@ -40,57 +40,41 @@
 \note{
 Hello
 
-Welcome to my talk on Ragax
-    
-I am going to take you through a little journey.
-    
-\begin{itemize}
-    \item Starting at Regular Expressions
-    \item Explaining what Derivatives are
-    \item Explaining what Ragas are
-    \item Expressing Ragas using derivatives
-\end{itemize}
+Welcome to my talk on Ragax or Ragalur Expressions ... pun intended.
 
-Then I'll dive into Context Free Grammars, Laziness, Memoization and Fix Points.
-    
-And finally I'll mention what I use derivatives for.
+I am going to use derivatives to show you how easy it is to implement your own regular expression matcher function.
+Derivatives are so trivial and extendable, that you should also be able to invent your own operators.
+This also means that we can extend it to Context Free Grammars, which we can use for Ragas, the whole point of this talk.
+
+Ok, lets go.
 }
 
-After this talk you should be able to:
 \begin{itemize}
-\item implement a regular expression matcher function and
-\item invent your own regular expression operators,
-\end{itemize}
-because \textbf{derivatives are intuitive}.
-
-You will also learn about:
-\begin{itemize}
-\item the most basic concept of a Raga;
-\item laziness, memoization and least fixed point;
-\item derivatives for context free grammars; and
-\item derivatives for trees.
+\item implement matcher
+\item invent operators
+\item \textbf{derivatives are intuitive and extendable}
+\item generate music
 \end{itemize}
 
 \end{frame}
 
-\section{Regular Expressions}
-
-\note{So lets start with Regular Expressions}
-
-\begin{frame}[fragile]{Matching a string of characters}
+\begin{frame}[fragile]{Regular Expressions}
 
 \note{
-Just a quick review
+Lets just do a quick review of regular expressions to make sure we are on the same page.
+Here we see an expression that matches a string that starts with an 'a',
+which is followed by any number of 'a's and 'b's
 
-Here we see an expression that matches a string that starts with an 'a' which is followed by any number of 'a's and 'b's
-
-We can also write it like this.
+We can also write it like this (point to bottom).
 Which is the syntax we'll use in the rest of this talk.
+So the concat operator is represented with a dot.
 
-So concat is represented with a dot.
+Also notice that we are not doing substring matching and that we only match the whole string.
+See for example "ba" that is not matched.
+
+Any questions?
 }
 
-Using a regex we can validate a string.
 $$
 a(a|b)*
 $$
@@ -107,53 +91,42 @@ a \cdot (a\ |\ b)^{*}
 $$
 \end{frame}
 
-\section{Derivatives}
-
-\note{Ok and we're ready for derivatives}
-
-\begin{frame}{Easy}
-
-The Brzozowski derivative is the \textbf{easiest way to evaluate a regular expression}.
-
-Three functions:
-\begin{itemize}
-\item Nullable
-\item Simplification (optional)
-\item Derivative
-\end{itemize}
-\end{frame}
-
-
-\begin{frame}{What is a Derivative}
+\begin{frame}{What is a Brzozowski Derivative}
 
 \note{
-What is a derivative
+What is a derivative? ... The derivative of an expression is the expression that is left to match after the given character has been matched.
+So the derivative of the expression a, a or b star with respect to a is a or b star.
 
-The derivative of an expression is the expression that is left to match after the given character has been matched.
+Here are some more examples:
 
-So the derivative of the expression a b c with respect to a is b c, since after we have matched a we only need to match b c
+\begin{itemize}
+\item The derivative of abc with respect to a is ab.
+\item With an "or" we have to try both alternatives so we take the derivative of both.
+\item The derivative of c with respect to c is the empty string
+\item The derivative of a star with respect to a stays a star.
+\end{itemize}
 
-With an Or we have to try both alternatives so we take the derivative of both.
-
-The derivative of b c with respect to b is just c
-
-The derivative of c with respect to c is the empty string
-
-The derivative of a star with respect to a stays a star.
-
-So lets look at the formal rules.
+I will now explain the formal rules, but I hope that these examples give you an intuition.
 }
 
 The derivative of an expression is the expression that is left to match after the given character has been matched
 \cite{brzozowski1964derivatives}.
 
-For example:
+\begin{center}
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.8cm,semithick]
+    \tikzstyle{every state}=[fill=orange,draw=none,text=white]
+
+    \node[initial,state]       (A)              {$a \cdot (a\ |\ b)^{*}$};
+    \node[state,fill=teal]     (B) [right of=A] {$(a\ |\ b)^{*}$};
+
+    \path (A) edge              node {a} (B);
+\end{tikzpicture}
+\end{center}
 
 \begin{center}
 \begin{tabular}{lll}
 $\partial_a a \cdot b \cdot c$ & = & $b \cdot c$ \\
 $\partial_a (a \cdot b\ |\ a \cdot c)$ & = & $(b\ |\ c)$ \\
-$\partial_b b \cdot c$ & = & $c$ \\
 $\partial_c c$ & = & $\epsilon$ \\
 $\partial_a a^{*}$ & = & $a^{*}$ \\
 \end{tabular}
@@ -170,9 +143,9 @@ If we think of the set of strings that matches a regular expression, then the em
 
 The empty string matches only the empty string.
 
-The character a matches only the character a.
+The character a matches only the character a, not the substring a, remember we are only dealing with whole strings.
 
-And then we have the rest, concat, zero or more and or
+And then we have the rest: concat, zero or more and or.
 }
 
 \begin{center}
@@ -217,7 +190,7 @@ Before we can explain the derivative algorithm we first need to understand the n
 
 The nullable function returns true if the set of strings that the regular expression matches includes the empty string.
 
-Ok so emptyset, no, because it does not match any string.
+The emptyset matches no strings, so it also does not match the empty string.
 
 the empty string, well uhm yes
 
@@ -253,15 +226,22 @@ Does the expression match the empty string.
 nullable :: Regex -> Bool
 nullable EmptySet = False
 nullable EmptyString = True
-nullable (Character _) = False
+nullable Character{} = False
 nullable (Concat a b) = nullable a && nullable b
-nullable (ZeroOrMore _) = True
+nullable ZeroOrMore{} = True
 nullable (Or a b) = nullable a || nullable b
 \end{minted}
 \end{center}
 \end{frame}
 
 \begin{frame}{Nullable Examples}
+
+\note{
+Lets look at some examples or 
+maybe you can tell me if there is an example here that you disagree with or don't understand ...
+everyone happy?
+}
+
 \begin{center}
 \begin{tabular}{l c l}
 $\nu(a \cdot b \cdot c)$ & = & $\invalid$ \\
@@ -278,45 +258,35 @@ $\nu(c \cdot (a \cdot b)^{*})$ & = & $\invalid$ \\
 \begin{frame}{Derivative Rules}
 
 \note{
-Ok lets do the formal derivative rules.
-
+Now lets do the formal derivative rules.
 The derivative of the emptyset is always going to be the emptyset.
-You can't expect an expression that does not match any string to suddenly start doing so given some input.
-
 The derivative of the empty string is also always the emptyset.
-The empty string does not expect any more characters.  Its done.
+The empty string does not expect any more characters.  It is done.
 
-The derivative of a single character given the same character is the empty string.
+The derivative of a single character given the same character is the empty string, 
+but otherwise it won't match any string, so it is the emptyset.
 
-The derivative of a concatenation is either the derivative of the first expression concatenated with the original following expression 
-or
-if the first expression was nullable we can skip over it and simply take the derivative of the following expression.
-The j is just shorthand for that.
+The derivative of a concatenation has two cases.
+If the left expression is not nullable then we simply take the derivative of the left expression concatenated to the right.
+But if the left expression is nullable, then we have to consider the case where we skip over it and take the derivative of the right expression.
 
 The derivative of the zero or more expression is the concatenation of the derivative of the contained expression and the original zero or more expression.
-We will do an example of this soon.
-
 The or expression simply pushes its problems down to its children.
 }
 
 \begin{center}
-\begin{tabular}{l c l}
+\begin{tabular}{l c l r}
 $\partial_a \emptyset$ & = & $\emptyset$ \\
 $\partial_a \epsilon$ & = & $\emptyset$ \\
 $\partial_a a$ & = & $\epsilon$ \\
 $\partial_a b$ & = & $\emptyset \ \ $ for $b \ne a$ \\
-$\partial_a (r \cdot s) $ & = & $\partial_a r \cdot s\ |\  \jmath(r) \cdot \partial_a s $ \\
+$\partial_a (r \cdot s) $ & = & $\partial_a r \cdot s\ $ & $not(\nu(r))$ \\
+$\partial_a (r \cdot s) $ & = & $\partial_a r \cdot s\ |\ \partial_a s $ & $\nu(r)$ \\
 $\partial_a (r^{*}) $ & = & $\partial_a r \cdot r^{*} $ \\
 $\partial_a (r\ |\ s) $ & = & $\partial_a r\ |\ \partial_a s $ \\
 \end{tabular}
 \end{center}
 
-\begin{center}
-\begin{tabular}{l c l r}
-$\jmath(r)$ & = & $\epsilon$ & if $\nu(r)$ \\
- & = & $\emptyset$ & otherwise \\
-\end{tabular}
-\end{center}
 \end{frame}
 
 \begin{frame}[fragile]{Derivative Rules}
@@ -344,24 +314,52 @@ deriv (Or r s) c =
 \end{center}
 \end{frame}
 
+\begin{frame}[fragile]{Our regular expression matcher}
+
+\note{
+Now lets put our two functions together to create a regular expression matcher.
+
+We simply apply the derivative function to each character in the string starting with our regular expression.
+
+If the regular expression that we end up with matches the empty string, then the regular expression matches the input string.
+}
+
+$$
+\nu(foldl(\partial, r, str))
+$$
+\begin{center}
+\begin{haskellcode}
+nullable (foldl deriv expr string)
+\end{haskellcode}
+\end{center}
+\begin{center}
+\begin{minted}{go}
+func matches(r *expr, str string) bool {
+    for _, c := range str {
+        r = deriv(r, c)
+    }
+    return nullable(r)
+}
+\end{minted}
+\end{center}
+\end{frame}
+
 \begin{frame}[fragile]{Simplification}
 
 \note{
-On the previous slide we saw that we made some simplifications.
+Finally we have simplification which is optional, 
+but is great for optimization and will make our examples much more readable.
+Here are some of the rules, which should be intuitive:
 
-Here are some rules, but its quite easy to add your own.
+\begin{itemize}
+\item Any expression concatenated with the emptyset is equivalent to the emptyset.
+\item Any expression concatenated with the empty string is equivalent to the expression.
+\item Any expression ored with itself is equivalent to that expression.
+\item Any expression ored with the emptyset is equivalent to that expression.
+\item Zero or more, zero or more times, is still just zero or more.
+\end{itemize}
 
-Any expression concatenated with the emptyset is equivalent to the emptyset.
-
-Any expression concatenated with the empty string is equivalent to the expression.
-
-Any expression ored with itself is equivalent to that expression.
-
-Any expression ored with the emptyset is equivalent to that expression.
-
-Zero or more, zero or more times, is still just zero or more.
-
-etc.
+Simplification can be part of the derivative function or happen in the constructors.
 }
 
 \begin{center}
@@ -381,53 +379,26 @@ $\emptyset^{*}$ & $\approx$ & $\varepsilon$ \\
 \end{center}
 \end{frame}
 
-\begin{frame}[fragile]{Execution}
-$$
-\nu(foldl(\partial, r, str))
-$$
-$$
-\nu(foldl(simp \cdot \partial, r, str))
-$$
-\begin{center}
-\begin{haskellcode}
-nullable (foldl (simplify . deriv) expr string)
-\end{haskellcode}
-\end{center}
-\begin{center}
-\begin{minted}{go}
-func matches(r *expr, str string) bool {
-    for _, c := range str {
-        r = simplify(deriv(r, c))
-    }
-    return nullable(r)
-}
-\end{minted}
-\end{center}
-\end{frame}
-
 \begin{frame}[fragile]{Example: Matching a sequence of notes}
 
 \note{
-Here is an example as promised.
-
+Ok finally we have another example.
 Lets say our characters are musical notes.
 And we have an expression for a c major pentatonic scale.
 
 We can take the derivative of the regular expression with respective to each input note to get a resulting regular expression.
-
 It matches if the resulting regular expression is nullable.
 
 Lets walk through it.
-
 The derivative of the initial expression with respect to c is the empty string concatenated with the zero or more expression.
+We could simplify that, but lets first try taking the next derivative, for the sake of example.
 
-We could simplify that, but lets first try taking the next derivative.
-
-So the derivative of the empty string concatenated with the zero or more expression is the emptyset concatenated with the zero or more expression, but since the empty string is nullabe we also have to take the derivative of the right expression as an alternative.
+So the derivative of the empty string concatenated with the zero or more expression is the emptyset concatenated with the zero or more expression, 
+but since the empty string is nullabe we also have to take the derivative of the right expression as an alternative.
 Here we can see that every musical note has become the emptyset, except the matching character which has become the empty string.
 This big Or is then concatenated with the original zero or more expression.
 So here we had to apply the concat rule, the empty string rule, zero or more rule and the or rule.
-This easily simplifies to the zero or more expression, but I'll explain this in detail soon enough.
+This easily simplifies to the zero or more expression.
 
 Finally we take the derivative with respect to g which is almost a repeat of the previous equation.
 
@@ -612,7 +583,8 @@ For example given G (e) you can choose P (g) if you want to ascend or R (d) if y
 \end{frame}
 
 \plain{Play Raag Bhupali}
-% http://raag-hindustani.com/22_files/ArohBhupali.mp3
+
+\note{\url{http://raag-hindustani.com/22_files/ArohBhupali.mp3}}
 
 \plain{Questions?}
 
