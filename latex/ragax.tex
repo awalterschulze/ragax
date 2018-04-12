@@ -395,18 +395,8 @@ We could simplify that, but lets first try taking the next derivative, for the s
 
 So the derivative of the empty string concatenated with the zero or more expression is the emptyset concatenated with the zero or more expression, 
 but since the empty string is nullabe we also have to take the derivative of the right expression as an alternative.
-Here we can see that every musical note has become the emptyset, except the matching character which has become the empty string.
-This big Or is then concatenated with the original zero or more expression.
-So here we had to apply the concat rule, the empty string rule, zero or more rule and the or rule.
-This easily simplifies to the zero or more expression.
 
-Finally we take the derivative with respect to g which is almost a repeat of the previous equation.
-
-Then we are left with the zero or more expression, which is nullable and means that our string matches the expression.
-
-Thats it.
-
-Now you know how to use derivatives.
+more notes on next slide...
 }
 
 Using a regex we can validate the C Major Pentatonic Scale.
@@ -437,9 +427,18 @@ $\nu((c|d|e|g|a)^{*})$ = \valid
 \plain{Questions?}
 
 \note{
-Questions
+Here we can see that every musical note has become the emptyset, except the matching character which has become the empty string.
+This big Or is then concatenated with the original zero or more expression.
+So here we had to apply the concat rule, the empty string rule, zero or more rule and the or rule.
+This easily simplifies to the zero or more expression.
 
-This is the part of the talk that everything builds on so if you don't understand something lets quickly take some time to try and get it right.
+Finally we take the derivative with respect to g which is almost a repeat of the previous equation.
+
+Then we are left with the zero or more expression, which is nullable and means that our string matches the expression and thats it.
+
+This is the part of the talk that everything builds on.
+If you don't understand something lets quickly take some time to try and get it right.
+At this point you should be able to write your own regular expression matcher function.
 }
 
 \begin{frame}[fragile]{Deterministic Finite Automata}
@@ -484,6 +483,8 @@ We can create the same DFA with derivatives by simply memoizing the derivative f
 The memoized derivative function is the transition function where the regular expressions themselves are states.
 The memoized nullable function is the accept function.
 Our simplification rules can be used for minimization.
+
+I just think this is so cool that we get this for free.
 }
 
 \begin{center}
@@ -515,14 +516,46 @@ $q_2$ & = & $(c|d|e|g|a)^{*}$ \\
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Recursive Regular Expressions}
+
+\note{
+We can also easily add references for recursion and to help us split our expression into parts,
+which we are going to need this to define our Ragas.
+
+For this we need two operators: the definition of a reference and the use of the reference.
+
+The derivative of $@q$ with respect to a is the derivative of whatever q's definition was with respect to a and the same with nullable.
+}
+
+\begin{itemize}
+\item One extra concept: Reference
+\item Two operations
+\item Define a reference: $\#myref = (a \cdot b)^{*}$
+\item Use a reference: $(@myref\ |\ c)$
+\end{itemize}
+\begin{center}
+\begin{tabular}{l c l}
+$\partial_a @q$ & = & $\partial_a \#q$ \\
+$\nu(@q)$ & = & $\nu(\#q)$ \\
+\end{tabular}
+\end{center}
+\end{frame}
+
 \section{Ragas - Indian Classical Music}
 
 \note{
-Ok now onto Ragas. First I have to thank Ryan Lemmer and Antoine Van Gelder.
-They introduced me to Ragas and came up with the idea to combine it with derivatives.
+Ok, but anyway, sorry for the digression, lets get onto Ragas. 
+First I have to thank Ryan Lemmer and Antoine Van Gelder for introducing me to Ragas and
+for coming up with the idea to combine Ragas with derivatives.
 }
 
-\plain{Video https://youtu.be/iElMWziZ62A}
+\plain{https://youtu.be/iElMWziZ62A?t=136}
+
+\note{
+Here is an example of someone playing a Raga.
+See how the player slides his hand up and down the strings.
+There are very strict rules that decide what notes he is allowed to play next.
+}
 
 \begin{frame}{Ragas}
 
@@ -562,8 +595,6 @@ Here is Raag Bhupali a type of Pentatonic scale
 Given the current note you must choose the next ascending or descending note.
 
 For example given G you can choose to play P or R next
-
-Play simple song
 }
 
 \begin{itemize}
@@ -582,9 +613,9 @@ Given the current note you must choose the next ascending or descending note.
 For example given G (e) you can choose P (g) if you want to ascend or R (d) if you want to descend.
 \end{frame}
 
-\plain{Play Raag Bhupali}
+\plain{\url{http://raag-hindustani.com/22_files/ArohBhupali.mp3}}
 
-\note{\url{http://raag-hindustani.com/22_files/ArohBhupali.mp3}}
+\note{Lets listen to this scale}
 
 \plain{Questions?}
 
@@ -596,42 +627,6 @@ After this things start to speed up a little.
 It starts to become less of a lesson and more a presentation.
 So its good to have this part solid.
 }
-
-\section{An expression for a Raga}
-
-\note{Ok, lets write an expression for a Raga}
-
-\begin{frame}{Recursive Regular Expressions}
-
-\note{
-Wait, before we start lets just quickly add one more concept.
-
-We need references for recursion and to help us split our expression into parts.
-
-It has two operators
-
-The definition of a reference
-
-and the use of the referenace
-
-The derivative of @q with respect to a is the derivative of whatever q's definition was with respect to a.
-
-Same with nullable.
-}
-
-\begin{itemize}
-\item One extra concept: Reference
-\item Two operations
-\item Define a reference: $\#myref = (a \cdot b)^{*}$
-\item Use a reference: $(@myref\ |\ c)$
-\end{itemize}
-\begin{center}
-\begin{tabular}{l c l}
-$\partial_a @q$ & = & $\partial_a \#q$ \\
-$\nu(@q)$ & = & $\nu(\#q)$ \\
-\end{tabular}
-\end{center}
-\end{frame}
 
 \begin{frame}{A Grammar for a Raga}
 
@@ -680,14 +675,12 @@ We can even add random input to create a generated piece that satisfies the raga
 \section{Context Free Grammars}
 
 \note{
-Ok back to the theory, now its going to get a little tough.
+I hope you enjoyed that, because now for pudding I have some vegetables.
 
-Don't worry if you don't understand it all, because it took me quite a while.
-
-I think if you just absorb the overview then you are doing it right.
+Don't worry if you don't understand the following part, because it took me quite a while.
+I think it is valuable to see some functional concepts applied in a creative way.
 
 Oh and by the way if you are not going to be pendantic then Context free grammars are just another name for recursive regular expressions.
-
 Our example from before was already a context free grammar.
 }
 
@@ -728,11 +721,13 @@ $$
 \note{
 We are going to solve this problem with 3 functional concepts.
 
-laziness
+\begin{itemize}
+\item laziness
+\item memoization
+\item least fix points
+\end{itemize}
 
-memoization
-
-least fix points
+which I like to call the: brake, handbrake and gas respectively.
 }
 
 This has been solved using \cite{might2011parsing} functional concepts:
@@ -744,14 +739,23 @@ This has been solved using \cite{might2011parsing} functional concepts:
 \end{frame}
 
 \begin{frame}[fragile]{Laziness}
-Instead of evaluating a function and returning a value, 
+\note{
+Laziness is when instead of evaluating a function and returning a value,
+we defer the evaluation and return a function that will return the value.
+Sorry it is kind of hard to demonstrate laziness in haskell, since it is lazy by default.
+}
+
+Strict:
+
 \begin{minted}{go}
 func eval(params ...) value {
     ...
     return value(...)
 }
 \end{minted}
-we defer the evaluation and return a function that will return the value.
+
+Lazy:
+
 \begin{minted}{go}
 func lazyEval(params ...) func() value {
     return func() value {
@@ -761,15 +765,45 @@ func lazyEval(params ...) func() value {
 \end{minted}
 \end{frame}
 
-\begin{frame}{Memoization}
-\begin{center}
-A function's results are cached for the given inputs.
-\end{center}
+\begin{frame}[fragile]{Memoization}
+
+\note{
+Memoizing a function is when you cache the results for given inputs and so only calculate the value once.
+Just like caching it is typically a great way to optimize your code.
+}
+
+\begin{minted}{go}
+func memoize(eval func(a) b) func(a) b {
+    mem := make(map[a]b)
+    return func(input a) b {
+        if output, ok := mem[input]; ok {
+            return output
+        }
+        output := eval(a)
+        mem[input] = output
+        return output
+    }
+}
+\end{minted}
+
 \end{frame}
 
 \begin{frame}[fragile]{Least Fixed Point}
+\note{
+A fixed point of a function is when the function result equals the input.
+For example: x squared has two fix points, one and zero.
+The least fixed point would be the zero, since it is smaller than one.
+}
 \begin{center}
-When a function call results in calling the same function with the same inputs, we return a chosen fixed point.
+
+$$f(x) = x^2$$
+$$f(0) = 0^2$$
+$$f(1) = 1^2$$
+
+fixed points = $\{0, 1\}$
+
+least fixed point = $0$
+
 \end{center}
 \end{frame}
 
