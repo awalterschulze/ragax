@@ -765,11 +765,100 @@ func lazyEval(params ...) func() value {
 \end{minted}
 \end{frame}
 
+\begin{frame}{Laziness - The Brake}
+
+\note{
+Instead of storing the field values of concat, or and zero or more we rather store functions that when called will return the value of the field.
+
+This allows us to avoid any recursion until the value is needed.
+
+I have used the lambda symbol here to represent a thunk or function that will return a value when called with no parameters.
+
+The j is used as shorthand to write concat in a single line.
+}
+
+Instead of storing the field values of \textbf{concat}, \textbf{or} and \textbf{zero or more} we rather store functions that when called will return the value of the field.
+
+This allows us to avoid any recursion until the value is needed.
+
+\begin{center}
+\begin{tabular}{l c l c l}
+$\partial_a (r | s) $ & = & $\partial_a r\ |\  \partial_a s $ 
+                      & = & $\lambda(\partial_a r)\ |\  \lambda(\partial_a s) $ \\
+$\partial_a (r^{*}) $ & = & $\partial_a r \cdot r^{*}$ 
+                      & = & $\lambda(\partial_a r) \cdot r^{*} $ \\
+$\partial_a (r \cdot s) $ & = & $\partial_a r \cdot s\ |\  \jmath(r) \cdot \partial_a s $ 
+& = &  $\lambda(\lambda(\partial_a r) \cdot s)\ |\  \lambda(\lambda(\jmath(r)) \cdot \lambda(\partial_a s)) $ \\
+\end{tabular}
+\end{center}
+
+\begin{center}	
+\begin{tabular}{l c l r}
+$\jmath(r)$ & = & $\epsilon$ & if $\nu(r)$ \\	
+ & = & $\emptyset$ & otherwise \\
+\end{tabular}	
+\end{center}
+
+\begin{center}
+\begin{tabular}{l c l}
+$\partial_n \#S$ &=& $\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \lambda(\partial_n \varepsilon)$ \\
+\end{tabular}	
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Memoization - The Handbrake}
+\note{
+Eventually nullability is going to be called and this won't be stopped by laziness alone.
+
+The point of these equations are that we still need the nullability of the derivative of S to calculate the nullability of the derivative of S.
+
+Memoizing helps to close the loop.
+
+It stops the recursive execution of the derivative by only calculating the derivative once and returning the same lazy function for following executions.x
+}
+
+Eventually nullable is going to be called.
+\begin{center}
+\begin{tabular}{lll}
+$\nu(\partial_n \#S)$ & = & $\nu(\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \lambda(\partial_n \varepsilon))$\\
+& = & $\nu(\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D )))))\ |\ \nu(\lambda(\partial_n \varepsilon))$\\
+\end{tabular}
+\end{center}
+Which will result in the execution of a lazy derivative function.
+\begin{center}
+\begin{tabular}{lll}
+$\lambda(\partial_n (@S \cdot (S \cdot ( @R\ |\ @D )))) $ & = &
+$\partial_n (@S \cdot (S \cdot ( @R\ |\ @D ))) $ \\
+&=&$\lambda(\lambda(\partial_n @S) \cdot \lambda((S \cdot ( @R\ |\ @D ))))\ |$\\
+&& $\lambda(\lambda(\jmath(@S)) \cdot \lambda(\partial_n (S \cdot ( @R\ |\ @D )))) $ \\
+$\lambda(\partial_n @S)$ &=& $\partial_n @S$ \\
+\end{tabular}
+\end{center}
+Which can result in infinite recursion.
+\begin{center}
+\begin{tabular}{lll}
+$\partial_n @S$ &=& $\partial_n \#S$ \\
+\end{tabular}
+\end{center}
+
+Memoizing helps by closing the loop.
+
+\begin{center}
+\begin{tabular}{lll}
+$\partial_n @S$ &=& $\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \lambda(\partial_n \varepsilon)$ \\
+\end{tabular}
+\end{center}
+
+\end{frame}
+
 \begin{frame}[fragile]{Memoization}
 
 \note{
 Memoizing a function is when you cache the results for given inputs and so only calculate the value once.
 Just like caching it is typically a great way to optimize your code.
+So in this case, we are using it to close a loop, but it is not enough.
+We need another tool.
 }
 
 \begin{minted}{go}
@@ -807,77 +896,24 @@ least fixed point = $0$
 \end{center}
 \end{frame}
 
-\begin{frame}{Laziness - The Brake}
-
+\begin{frame}[fragile]{Least Fixed Point of Derivative}
 \note{
-Instead of storing the field values of Concat, Or and Zero or more we rather store functions that when called will return the value of the field.
-
-This allows us to avoid any recursion until the value is needed.
-
-I have used the lambda symbol here to represent a function that will return a value when called.
+What fixed points do we have for the derivative function?
+The derivative of the empty set is always the empty set,
+but the derivative of a star given a is also a star.
+I would think that the empty set is the least fixed point, given that it is the simplest expression.
 }
-
-Instead of storing the field values of \textbf{concat}, \textbf{or} and \textbf{zero or more} we rather store functions that when called will return the value of the field.
-
-This allows us to avoid any recursion until the value is needed.
-
 \begin{center}
-\begin{tabular}{l c l}
-$\partial_a (r | s) $ & = & $\lambda(\partial_a r)\ |\  \lambda(\partial_a s) $ \\
-$\partial_a (r^{*}) $ & = & $\lambda(\partial_a r) \cdot r^{*} $ \\
-$\partial_a (r \cdot s) $ & = & $\lambda(\lambda(\partial_a r) \cdot s)\ |\  \lambda(\lambda(\jmath(r)) \cdot \lambda(\partial_a s)) $ \\
-\\
-$\partial_n \#S$ &=& $\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \lambda(\partial_n \varepsilon)$ \\
-\end{tabular}
+
+$$\partial_a r\ = r\ $$
+$$\partial_a \emptyset\ = \emptyset\ $$
+$$\partial_a a^{*} = a^{*}$$
+
+fixed points = $\{\emptyset, a^{*}\}$
+
+least fixed point = $\emptyset$
+
 \end{center}
-\end{frame}
-
-\begin{frame}{Memoization - The Handbrake}
-
-\note{
-Nullability is relentless and won't be stopped by laziness.
-
-The point of these equatiosn are that we still need the nullability of the derivative of S to calculate the nullability of the derivative of S.
-
-Memoizing helps to close the loop.
-
-It stops the recursive execution of the derivative by only calculating the derivative once and returning the same lazy function for following executions.
-
-But its not enough.
-}
-
-Eventually nullable is going to be called.
-\begin{center}
-\begin{tabular}{lll}
-$\nu(\partial_n \#S)$ & = & $\nu(\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \lambda(\partial_n \varepsilon))$\\
-& = & $\nu(\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D )))))\ |\ \nu(\lambda(\partial_n \varepsilon))$\\
-\end{tabular}
-\end{center}
-Which will result in the execution of a lazy derivative function.
-\begin{center}
-\begin{tabular}{lll}
-$\lambda(\partial_n (@S \cdot (S \cdot ( @R\ |\ @D )))) $ & = &
-$\partial_n (@S \cdot (S \cdot ( @R\ |\ @D ))) $ \\
-&=&$\lambda(\lambda(\partial_n @S) \cdot \lambda((S \cdot ( @R\ |\ @D ))))\ |$\\
-&& $\lambda(\lambda(\jmath(@S)) \cdot \lambda(\partial_n (S \cdot ( @R\ |\ @D )))) $ \\
-$\lambda(\partial_n @S)$ &=& $\partial_n @S$ \\
-\end{tabular}
-\end{center}
-Which can result in infinite recursion.
-\begin{center}
-\begin{tabular}{lll}
-$\partial_n @S$ &=& $\partial_n \#S$ \\
-\end{tabular}
-\end{center}
-
-Memoizing helps by closing the loop.
-
-\begin{center}
-\begin{tabular}{lll}
-$\partial_n @S$ &=& $\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \lambda(\partial_n \varepsilon)$ \\
-\end{tabular}
-\end{center}
-
 \end{frame}
 
 \begin{frame}{Least Fixed Point - The Gas}
@@ -885,75 +921,29 @@ $\partial_n @S$ &=& $\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \
 \note{
 Eventually nullable still needs to return a true or a false.
 
-Laziness and memoization are not enough.
+We can use our least fixed point, to return a derivative of empty set when nullable revisits the same expression.
 
-Here we calcuate the least fix point of nullable given a bottom of false.
-Basically, when the same lazy expression is recursively revisited, while calculating nullability, a false is returned.
-
-But lets first look at a simpler example
+Now we can support context free grammars using derivatives.
 }
 
-BUT Nullable is relentless and still needs to return a true or a false.
-
-Laziness and memoization are not enough.
-
-A least fixed point returns a bottom when an input is recursively revisited.
-
-For the nullable function our bottom is false.
+Nullable is relentless:
 
 \begin{center}
 \begin{tabular}{lll}
 $\nu(\lambda(\partial_n \#S))$ &=& $\ldots$\\
 $\nu(\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D )))))\ |\ \nu(\lambda(\partial_n \varepsilon))$ &=& $\ldots$ \\
 $\nu(\lambda(\lambda(\partial_n @S) \cdot \lambda(\ldots)))$& = & $\ldots$ \\
-$\nu(\lambda(\partial_n @S))$ &=& {\color{mLightGreen} bottom} \\
-$\nu(\lambda(\lambda(\partial_n @S) \cdot \lambda(\ldots)))$& = & {\color{mLightGreen} bottom} \& false \\
-&=& {\color{mLightGreen} false} \\
-$\nu(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \nu(\lambda(\partial_n \varepsilon))$ &=& {\color{mLightGreen} false} | false\\
-&=& {\color{mLightGreen} false} \\
+$\nu(\lambda(\partial_n @S))$   &=& $\nu$({\color{mLightGreen} fix}) \\
+                                &=& $\nu$({\color{mLightGreen} $\emptyset$}) \\
+                                &=& {\color{mLightGreen} false} \\
+$\nu(\lambda(\lambda(\partial_n @S) \cdot \lambda(\ldots)))$& = & {\color{mLightGreen} false} \& false \\
+$\nu(\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D )))))\ |\ \nu(\lambda(\partial_n \varepsilon))$ &=& {\color{mLightGreen} false} | false\\
 $\nu(\lambda(\partial_n \#S))$ &=& {\color{mLightGreen} false} \\
 \end{tabular}
 \end{center}
 \end{frame}
 
-\begin{frame}{Least Fixed Point (without Laziness)}
-
-\note{
-Here is an example without laziness
-
-Basically we set a bottom of false, meaning that if we revisit an expression we return false.
-
-So nullable of $@S$ revisits $\#S$ which returns the bottom and allows us to evaluate the rest of the expression and stop the recursion.
-
-The concat returns false, since it starts with a character.
-
-The empty string returns true.
-
-And then we can see that our equation evaluates to true.
-
-We can also see that this nullability is equivalent to the nullability of the equivalent expression.
-
--- Go back
-}
-
-\begin{center}
-\begin{tabular}{lll}
-$\nu(\#S)$ & = & $\nu(@S \cdot (S \cdot ( @R\ |\ @D ))\ |\ \varepsilon)$ \\
-& = & $(\nu(@S)\ and\ \nu(S \cdot ( @R\ |\ @D )))\ or\  \nu(\varepsilon)$ \\
-& = & ({\color{mLightGreen} bottom}\ and\ false)\ or\ true \\
-& = & ({\color{mLightGreen} false}\ and\ false)\ or\ true \\
-& = & {\color{mLightGreen} true} \\
-& = & $\nu((S \cdot ( @R\ |\ @D ))^{*})$ \\
-\end{tabular}
-\end{center}
-\end{frame}
-
-\plain{Demo}
-
-\note{
-Now if we do the same to our lazy expressions we get false, 
-since this is the derivative of S and the expression always expects more than one note.
-}
+\plain{\url{http://awalterschulze.github.io/ragax/}}
 
 \begin{frame}{Yacc is Dead}
 
