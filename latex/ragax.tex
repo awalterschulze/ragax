@@ -922,8 +922,6 @@ least fixed point = $\emptyset$
 Eventually nullable still needs to return a true or a false.
 
 We can use our least fixed point, to return a derivative of empty set when nullable revisits the same expression.
-
-Now we can support context free grammars using derivatives.
 }
 
 Nullable is relentless:
@@ -945,55 +943,52 @@ $\nu(\lambda(\partial_n \#S))$ &=& {\color{mLightGreen} false} \\
 
 \plain{\url{http://awalterschulze.github.io/ragax/}}
 
+\note{
+Here we see both versions of the grammars and how they both validate the same strings.
+}
+
 \begin{frame}{Yacc is Dead}
 
 \note{
-Now we have a fully general Context Free Grammar validator.
+Now we have a fully generalized Context Free Grammar validator.
 
 Yacc, Antlr, Flex, Bison, etc.  definitely still performs better, especially in worst case.
 
 But derivatives:
 
-are a lot easier to implement and understand than LR(1), LL(1), LALR parsers
+\begin{itemize}
+\item are a lot easier to implement and understand than LR(1), LL(1), LALR parsers
+\item are implemented using only functional techniques
+\item can validate the full set of Context Free Grammars, not just a subset.
+\end{itemize}
 
-have a lot in common with the functional Parser pattern and
-
-can validate the full set of Context Free Grammars, not just a subset.
 }
 
-Now we have a fully general Context Free Grammar validator.
-
-Yacc, Antlr, Flex, Bison, etc.  definitely still perform better, especially in worst case.
+Yacc, Antlr, Flex, Bison, etc.  perform better.
 
 But derivatives:
 \begin{itemize}
-\item are a lot easier to implement and understand than LR(1), LL(1), LALR parsers;
-\item have a lot in common with the functional Parser pattern;
-\item can validate the full set of Context Free Grammars, not just a subset.
+\item more intuitive than LR(1), LL(1), LALR parsers;
+\item only use functional techniques;
+\item recognize generalized Context Free Grammars, not just a subset.
 \end{itemize}
 \end{frame}
 
 \section{Trees}
 
-\note{Finally lets quickly just brush over trees}
+\note{Finally lets quickly brush over trees}
 
 \begin{frame}{Relaxing}
 
 \note{
+The expressions recognized by derivatives can be polymorphic.
+They don't need to only apply to characters.
+They can rather refer to XML Nodes and this is how the RelaxNGs implementation and specification is done.
 RELAX NG is a schema language for XML, like XSchema and DTD.
-
-The implementation specification is done using derivatives.
-
-Some differences are that:
-
-Instead of a character as an input to the derivative function we have an XML Node.
-
-They have also included some new operators:
-Not or Compliment, Interleave and Optional
+Relaxing also introduces some extra operators: Not, Compliment, Interleave and Optional.
 
 With interleave the derivative can take the derivative of any one of the interleaving patterns.
 The other pattern needs to keep its original form.
-
 Nullability is easy.
 
 Not, like all the logical operators just passes its problem down.
@@ -1003,12 +998,11 @@ And optional is just syntactic sugar.
 
 http://relaxng.org/ \cite{Relaxng2014} - RELAX NG is a schema language for XML, like XSchema and DTD.
 
-Implementation and specification are done using derivatives.
+Derivatives used for Implementation and Specification.
 
-XMLNodes instead of Characters.
+Polymorphic Regular Expressions: Characters $=>$ XMLNodes.
 
-New Operators: Not, Interleave and Optional
-
+New Operators:
 \begin{center}
 \begin{tabular}{l c l}
 $\partial_a (r\ \&\&\ s) $ & = & $(\partial_a r\ \&\&\ s)\ |\ (\partial_a s\ \&\&\ r)$ \\
@@ -1027,20 +1021,18 @@ $(r)?$ & $\approx$ & $r\ |\ \varepsilon$ \\
 \begin{frame}[fragile]{TreeNode}
 
 \note{
-So here is the haskell code for a derivative of a Tree which is pretty close to an XML Node.
+The "hard" part is defining deriative function for the XML or Tree node operator.
+Here is an implementation in Haskell.
 
 The TreeNode pattern has a name expression and a child expression.
 To keep it basic I have made the name expression just a plain string.
 
 The Node has a label string and a list of child nodes.
+If the name expression equals the label string we have to take the derivative of the children.
+Otherwise we return the empty set just like with a character.
 
-if the name expression equals the label string we have to take the derivative of the children.
-
-otherwise we return the emptyset just like with a character.
-
-if the result of taking the derivative of the children is nullable we return the empty pattern else we return the emptyset.
-
-And nullability of a treenode is always false, just like a character.
+If the result of taking the derivative of the children is nullable we return the empty pattern else we return the empty set.
+Nullability of a treenode is always false, just like a character.
 }
 
 \begin{haskellcode}
@@ -1058,55 +1050,51 @@ nullable (TreeNode _ _) = False
 \end{haskellcode}
 \end{frame}
 
-\plain{Video https://youtu.be/SvjSP2xYZm8}
+\plain{\url{https://youtu.be/SvjSP2xYZm8} \url{katydid.github.io}}
 
-\begin{frame}{Katydid Relapse}
+\begin{frame}{Katydid: Relapse}
 
 \note{
 Finally the thing I am actually working on.
-
-Katydid is a tree toolkit, which includes relapse: a validation language based on relaxng
+Katydid is a tree toolkit, which includes Relapse: a validation language based on relaxing.
 
 I use derivatives and memoization to build a visual pushdown automata.
 This allows me to do matching with zero memory allocations once the automata has been compiled.
 
-I support. Json, Protobuf, XML and reflected structures, but its easy to add your own parser.
+I support: Json, Protobuf, XML and reflected structures, but its easy to add your own parser.
+I currently have implementations in Go and Haskell.
 
-I added some new operators.
-
-And, Contains and ZAny.
-
+I also added some new operators: And, Contains and ZAny.
 Zany is just zero or more of anything, like .* in a regular expression.
 Which is just syntatic sugar for the compliment of the emptyset.
-
 And, again like all logical operators, just passes its problem down.
-
-And Contains is just syntatic sugar for an expression surrounded by concatenated zanys.
+Contains is just syntatic sugar for an expression surrounded by concatenated zanys.
 }
 
-katydid.github.io - Relapse: Tree Validation Language.
-
-Uses derivatives and memoization to build Visual Pushdown Automata.
+Relapse: Tree Validation Language.
 
 JSON, Protobufs, Reflected Go Structures and XML
 
-New Operators: And, Contains and ZAny
+Go, Haskell + Cross language testsuite
 
+New Operators:
 \begin{center}
 \begin{tabular}{l c l}
 $\partial_a (r\ \&\ s) $ & = & $(\partial_a r\ \&\ \partial_a s)$ \\
 $\nu(r\ \&\ s)$ & = & $\nu(r)$ and $\nu(s)$ \\
 $\emptyset\ \&\ r$ & $\approx$ & $\emptyset$ \\
-$r \&\ r$ & $\approx$ & $r$ \\
+$r\ \&\ r$ & $\approx$ & $r$ \\
 \\
 $*$ & $\approx$ & $!(\emptyset)$ \\
 \\
 $.r$ & $\approx$ & $* \cdot r \cdot *$ \\
 \end{tabular}
 \end{center}
+
+\url{https://github.com/katydid/katydid-haskell}
 \end{frame}
 
-\plain{Playground and Tour}
+\plain{\url{http://katydid.github.io/play/} \url{http://katydid.github.io/tour/}}
 
 \note{
 I can now show you the playground.
@@ -1116,7 +1104,7 @@ And I also have a tour.
 
 \begin{frame}{References}
 
-\note{Thank you}
+\note{Thank you for listening.}
 
 \bibliography{ragax}
 \bibliographystyle{abbrv}
