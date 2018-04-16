@@ -295,9 +295,9 @@ $\partial_a (r\ |\ s) $ & = & $\partial_a r\ |\ \partial_a s $ \\
 
 \begin{center}
 \begin{haskellcode}
-deriv :: Expr -> Char -> Expr
-deriv EmptyString c = EmptySet
-deriv EmptySet c = EmptySet
+deriv :: Regex -> Char -> Regex
+deriv EmptyString _ = EmptySet
+deriv EmptySet _ = EmptySet
 deriv (Character a) c = if a == c 
   then EmptyString else EmptySet
 deriv (Concat r s) c =
@@ -329,7 +329,8 @@ $$
 $$
 \begin{center}
 \begin{haskellcode}
-nullable (foldl deriv expr string)
+match :: Regex -> String -> Bool
+match expr string = nullable (foldl deriv expr string)
 \end{haskellcode}
 \end{center}
 \begin{center}
