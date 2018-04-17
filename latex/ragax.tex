@@ -35,24 +35,24 @@
 
 \maketitle
 
-\begin{frame}{Key Takeaways}
-
 \note{
 Hello
 
 Welcome to my talk on Ragax or Ragalur Expressions ... pun intended.
-
-I am going to use derivatives to show you how easy it is to implement your own regular expression matcher function.
-Derivatives are so trivial and extendable, that you should also be able to invent your own operators.
-This also means that we can extend it to Context Free Grammars, which we can use for Ragas, the whole point of this talk.
-
-Ok, lets go.
 }
 
+\begin{frame}{Key Takeaways}
+
+\note{
+I am going to use derivatives to show you how easy it is to implement your own regular expression matcher function.
+Derivatives are so trivial and extendable, that you should even be able to invent your own regular expression operators.
+This also means that we can extend derivatives to even validate Context Free Grammars, which we can use for Ragas, the whole point of this talk.
+}
+
+\textbf{Derivatives} are \textbf{Intuitive} and \textbf{Extendable}
 \begin{itemize}
 \item implement matcher
 \item invent operators
-\item \textbf{derivatives are intuitive and extendable}
 \item generate music
 \end{itemize}
 
@@ -61,7 +61,7 @@ Ok, lets go.
 \begin{frame}[fragile]{Regular Expressions}
 
 \note{
-Lets just do a quick review of regular expressions to make sure we are on the same page.
+Let's do a quick review of regular expressions, just to make sure that we are on the same page.
 Here we see an expression that matches a string that starts with an 'a',
 which is followed by any number of 'a's and 'b's
 
@@ -95,22 +95,21 @@ $$
 
 \note{
 What is a derivative? ... The derivative of an expression is the expression that is left to match after the given character has been matched.
-So the derivative of the expression a, a or b star with respect to a is a or b star.
+So the derivative of the expression 'a' concatenated with 'a' "or" 'b' star with respect to 'a' is 'a' "or" 'b' star.
 
 Here are some more examples:
 
 \begin{itemize}
-\item The derivative of abc with respect to a is ab.
+\item The derivative of "abc" with respect to 'a' is "bc".
 \item With an "or" we have to try both alternatives so we take the derivative of both.
-\item The derivative of c with respect to c is the empty string
-\item The derivative of a star with respect to a stays a star.
+\item The derivative of 'c' with respect to 'c' is the empty string
+\item The derivative of 'a' star with respect to 'a' stays 'a' star.
 \end{itemize}
 
 I will now explain the formal rules, but I hope that these examples give you an intuition.
 }
 
-The derivative of an expression is the expression that is left to match after the given character has been matched
-\cite{brzozowski1964derivatives}.
+The Brzozowski derivative (1964) \cite{brzozowski1964derivatives} of an expression is the expression that is left to match after the given character has been matched.
 
 \begin{center}
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.8cm,semithick]
@@ -237,7 +236,7 @@ nullable (Or a b) = nullable a || nullable b
 \begin{frame}{Nullable Examples}
 
 \note{
-Lets look at some examples or 
+Let's look at some examples or 
 maybe you can tell me if there is an example here that you disagree with or don't understand ...
 everyone happy?
 }
@@ -319,21 +318,26 @@ deriv (Or r s) c =
 \note{
 Now lets put our two functions together to create a regular expression matcher.
 
+Here we have the math, haskell and Go implementations of the match function.
+You only need to understand one.
+
 We simply apply the derivative function to each character in the string starting with our regular expression.
 
 If the regular expression that we end up with matches the empty string, then the regular expression matches the input string.
 }
 
-$$
-\nu(foldl(\partial, r, str))
-$$
 \begin{center}
+\begin{tabular}{l c l r}
+$\nu(foldl(\partial, r, str))$ & & & where \\
+$foldl(\partial, r, str)$ & = & $r$ & if $str == ""$ \\
+                          & = & $foldl(\partial, \partial_{s[0]} (r), s[1:])$ & otherwise \\
+\end{tabular}
+
 \begin{haskellcode}
 match :: Regex -> String -> Bool
-match expr string = nullable (foldl deriv expr string)
+match r str = nullable (foldl deriv r str)
 \end{haskellcode}
-\end{center}
-\begin{center}
+
 \begin{minted}{go}
 func matches(r *expr, str string) bool {
     for _, c := range str {
@@ -384,13 +388,13 @@ $\emptyset^{*}$ & $\approx$ & $\varepsilon$ \\
 
 \note{
 Ok finally we have another example.
-Lets say our characters are musical notes.
+Let's say our characters are musical notes.
 And we have an expression for a c major pentatonic scale.
 
 We can take the derivative of the regular expression with respective to each input note to get a resulting regular expression.
 It matches if the resulting regular expression is nullable.
 
-Lets walk through it.
+Let's walk through it.
 The derivative of the initial expression with respect to c is the empty string concatenated with the zero or more expression.
 We could simplify that, but lets first try taking the next derivative, for the sake of example.
 
@@ -445,9 +449,11 @@ At this point you should be able to write your own regular expression matcher fu
 \begin{frame}[fragile]{Deterministic Finite Automata}
 
 \note{
-Lets just take a quick tangent.
+Let's take a quick tangent.
 
-Do you remember deterministic finite automata.
+Do you remember deterministic finite automata.  
+If you don't, don't worry about it, you won't need this for the next part.
+I just think it is really cool.
 
 Here is one for the regular expression we just evaluated.
 
@@ -520,17 +526,19 @@ $q_2$ & = & $(c|d|e|g|a)^{*}$ \\
 \begin{frame}{Recursive Regular Expressions}
 
 \note{
-We can also easily add references for recursion and to help us split our expression into parts,
-which we are going to need this to define our Ragas.
+Ok and back from the tangent.
+
+We now need to add references for recursion, to define our Ragas with.
 
 For this we need two operators: the definition of a reference and the use of the reference.
 
 The derivative of $@q$ with respect to a is the derivative of whatever q's definition was with respect to a and the same with nullable.
 }
 
+$$((a \cdot b)^{*}\ |\ c)$$
+
+Two new operations:
 \begin{itemize}
-\item One extra concept: Reference
-\item Two operations
 \item Define a reference: $\#myref = (a \cdot b)^{*}$
 \item Use a reference: $(@myref\ |\ c)$
 \end{itemize}
@@ -545,16 +553,16 @@ $\nu(@q)$ & = & $\nu(\#q)$ \\
 \section{Ragas - Indian Classical Music}
 
 \note{
-Ok, but anyway, sorry for the digression, lets get onto Ragas. 
+Now that we have all the tools that we need, we can move on to Ragas.
 First I have to thank Ryan Lemmer and Antoine Van Gelder for introducing me to Ragas and
 for coming up with the idea to combine Ragas with derivatives.
 }
 
-\plain{https://youtu.be/iElMWziZ62A?t=136}
+\plain{\url{https://youtu.be/iElMWziZ62A?t=136}}
 
 \note{
 Here is an example of someone playing a Raga.
-See how the player slides his hand up and down the strings.
+Notice how the player slides his hand up and down the strings.
 There are very strict rules that decide what notes he is allowed to play next.
 }
 
@@ -568,16 +576,17 @@ They are stricter than western scales.
 The possible next note is not simply chosen from a set, but rather depends on the current note.
 
 Also notes are labeled a bit differently.
-
 They are labeled relatively to the start note.
 So this is simply how they are labeled if you start at c.
+
+I will skip over microtones and all the other theory, just because it is not relevant to this talk.
 }
 
+Ragas are indian version of western scales \cite{Raga2011}:
 \begin{itemize}
-\item Ragas are indian version of western scales \cite{Raga2011}.
-\item Stricter than western scales.
-\item Possible next note depends on current note.
-\item Notes labeled differently and relative to root note.
+\item Stricter
+\item Next note depends on current note.
+\item Notes named differently and relative to root note.
 \end{itemize}
 \begin{center}
 \begin{tabular}{l|llllllllllll}
@@ -585,7 +594,6 @@ Raga & S & r & R & g & G & m & M & P & d & D & n & N \\
 Western & c & c$\sharp$ & d & d$\sharp$ & e & f & f$\sharp$ & g & g$\sharp$ & a & a$\sharp$ & b \\
 \end{tabular}
 \end{center}
-I will skip over microtones and all the other theory, just because its not relevant to this talk.
 \end{frame}
 
 \begin{frame}{Example Raga}
@@ -595,7 +603,7 @@ Here is Raag Bhupali a type of Pentatonic scale
 
 Given the current note you must choose the next ascending or descending note.
 
-For example given G you can choose to play P or R next
+For example given G (e) you can choose P (g) if you want to ascend or R (d) if you want to descend.
 }
 
 \begin{itemize}
@@ -609,14 +617,11 @@ For example given G you can choose to play P or R next
 \item Descent: c$^{1}$ a g e d c
 \end{itemize}
 
-Given the current note you must choose the next ascending or descending note.
-
-For example given G (e) you can choose P (g) if you want to ascend or R (d) if you want to descend.
 \end{frame}
 
 \plain{\url{http://raag-hindustani.com/22_files/ArohBhupali.mp3}}
 
-\note{Lets listen to this scale}
+\note{Let's listen to this scale}
 
 \plain{Questions?}
 
@@ -666,7 +671,7 @@ $\#D$ & = & $D \cdot ( \varepsilon\ |\ @P )$ \\
 \plain{Demo}
 
 \note{
-Lets see it in action
+Let's see it in action
 
 This program basically does not allow me to play a note that will make the expression go into an emptyset state.
 
@@ -725,10 +730,10 @@ We are going to solve this problem with 3 functional concepts.
 \begin{itemize}
 \item laziness
 \item memoization
-\item least fix points
+\item least fixed point
 \end{itemize}
 
-which I like to call the: brake, handbrake and gas respectively.
+I like to call this these the: brake, handbrake and gas respectively.
 }
 
 This has been solved using \cite{might2011parsing} functional concepts:
@@ -769,18 +774,20 @@ func lazyEval(params ...) func() value {
 \begin{frame}{Laziness - The Brake}
 
 \note{
-Instead of storing the field values of concat, or and zero or more we rather store functions that when called will return the value of the field.
+I used the lambda symbol here to represent a thunk or function that will return a value when called with no parameters.
+
+So instead of storing the field values of concat, or and zero or more we rather store functions that when called will return the value of the field.
 
 This allows us to avoid any recursion until the value is needed.
-
-I have used the lambda symbol here to represent a thunk or function that will return a value when called with no parameters.
 
 The j is used as shorthand to write concat in a single line.
+
+Below we can see our expression rewritten with laziness.
 }
 
-Instead of storing the field values of \textbf{concat}, \textbf{or} and \textbf{zero or more} we rather store functions that when called will return the value of the field.
-
-This allows us to avoid any recursion until the value is needed.
+\begin{center}
+$\lambda \implies$ laziness
+\end{center}
 
 \begin{center}
 \begin{tabular}{l c l c l}
@@ -811,22 +818,23 @@ $\partial_n \#S$ &=& $\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ 
 \begin{frame}{Memoization - The Handbrake}
 \note{
 Eventually nullability is going to be called and this won't be stopped by laziness alone.
+It will result in the execution of a lazy derivative function.
 
 The point of these equations are that we still need the nullability of the derivative of S to calculate the nullability of the derivative of S.
 
 Memoizing helps to close the loop.
 
-It stops the recursive execution of the derivative by only calculating the derivative once and returning the same lazy function for following executions.x
+It stops the recursive execution of the derivative by only calculating the derivative once and returning the same lazy function for following executions.
 }
 
-Eventually nullable is going to be called.
+Nullable is called:
 \begin{center}
 \begin{tabular}{lll}
 $\nu(\partial_n \#S)$ & = & $\nu(\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \lambda(\partial_n \varepsilon))$\\
 & = & $\nu(\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D )))))\ |\ \nu(\lambda(\partial_n \varepsilon))$\\
 \end{tabular}
 \end{center}
-Which will result in the execution of a lazy derivative function.
+Lazy function is executed:
 \begin{center}
 \begin{tabular}{lll}
 $\lambda(\partial_n (@S \cdot (S \cdot ( @R\ |\ @D )))) $ & = &
@@ -836,15 +844,13 @@ $\partial_n (@S \cdot (S \cdot ( @R\ |\ @D ))) $ \\
 $\lambda(\partial_n @S)$ &=& $\partial_n @S$ \\
 \end{tabular}
 \end{center}
-Which can result in infinite recursion.
+Infinite recursion:
 \begin{center}
 \begin{tabular}{lll}
 $\partial_n @S$ &=& $\partial_n \#S$ \\
 \end{tabular}
 \end{center}
-
-Memoizing helps by closing the loop.
-
+Memoizing closes the loop:
 \begin{center}
 \begin{tabular}{lll}
 $\partial_n @S$ &=& $\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \lambda(\partial_n \varepsilon)$ \\
@@ -856,10 +862,10 @@ $\partial_n @S$ &=& $\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \
 \begin{frame}[fragile]{Memoization}
 
 \note{
-Memoizing a function is when you cache the results for given inputs and so only calculate the value once.
+Memoizing a function is when you cache the results for the previous inputs and so only calculate the value for the same inputs once.
 Just like caching it is typically a great way to optimize your code.
-So in this case, we are using it to close a loop, but it is not enough.
-We need another tool.
+But in this case, we are using it to close a loop.
+Unfortunately it is not enough. We need another tool.
 }
 
 \begin{minted}{go}
@@ -880,7 +886,7 @@ func memoize(eval func(a) b) func(a) b {
 
 \begin{frame}[fragile]{Least Fixed Point}
 \note{
-A fixed point of a function is when the function result equals the input.
+A fixed point of a function is where the function output equals the input.
 For example: x squared has two fix points, one and zero.
 The least fixed point would be the zero, since it is smaller than one.
 }
@@ -900,9 +906,8 @@ least fixed point = $0$
 \begin{frame}[fragile]{Least Fixed Point of Derivative}
 \note{
 What fixed points do we have for the derivative function?
-The derivative of the empty set is always the empty set,
-but the derivative of a star given a is also a star.
-I would think that the empty set is the least fixed point, given that it is the simplest expression.
+The derivative of the empty set is always the empty set and the derivative of 'a' star given an 'a' is also 'a' star.
+The empty set is the least fixed point, given it is the simplest expression.
 }
 \begin{center}
 
@@ -922,7 +927,7 @@ least fixed point = $\emptyset$
 \note{
 Eventually nullable still needs to return a true or a false.
 
-We can use our least fixed point, to return a derivative of empty set when nullable revisits the same expression.
+We can use our least fixed point to return a derivative of empty set when nullable revisits the same lazy expression.
 }
 
 Nullable is relentless:
@@ -945,6 +950,8 @@ $\nu(\lambda(\partial_n \#S))$ &=& {\color{mLightGreen} false} \\
 \plain{\url{http://awalterschulze.github.io/ragax/}}
 
 \note{
+And thats it we have solved the infinite recursion.  Let's see it in action.
+
 Here we see both versions of the grammars and how they both validate the same strings.
 }
 
@@ -986,7 +993,7 @@ The expressions recognized by derivatives can be polymorphic.
 They don't need to only apply to characters.
 They can rather refer to XML Nodes and this is how the RelaxNGs implementation and specification is done.
 RELAX NG is a schema language for XML, like XSchema and DTD.
-Relaxing also introduces some extra operators: Not, Compliment, Interleave and Optional.
+Relaxing also introduces some extra operators: Compliment, Interleave and Optional.
 
 With interleave the derivative can take the derivative of any one of the interleaving patterns.
 The other pattern needs to keep its original form.
@@ -1052,6 +1059,12 @@ nullable (TreeNode _ _) = False
 \end{frame}
 
 \plain{\url{https://youtu.be/SvjSP2xYZm8} \url{katydid.github.io}}
+
+\note{
+I think its time for another video by Ze Frank.
+
+And here is my project page.
+}
 
 \begin{frame}{Katydid: Relapse}
 
