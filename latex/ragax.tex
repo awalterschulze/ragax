@@ -53,7 +53,7 @@ This also means that we can extend derivatives to even validate Context Free Gra
 \begin{itemize}
 \item implement matcher
 \item invent operators
-\item generate music
+\item listen to music
 \end{itemize}
 
 \end{frame}
@@ -278,7 +278,7 @@ The or expression simply pushes its problems down to its children.
 $\partial_a \emptyset$ & = & $\emptyset$ \\
 $\partial_a \epsilon$ & = & $\emptyset$ \\
 $\partial_a a$ & = & $\epsilon$ \\
-$\partial_a b$ & = & $\emptyset \ \ $ for $b \ne a$ \\
+$\partial_a b$ & = & $\emptyset$ & for $b \ne a$ \\
 $\partial_a (r \cdot s) $ & = & $\partial_a r \cdot s\ $ & $not(\nu(r))$ \\
 $\partial_a (r \cdot s) $ & = & $\partial_a r \cdot s\ |\ \partial_a s $ & $\nu(r)$ \\
 $\partial_a (r^{*}) $ & = & $\partial_a r \cdot r^{*} $ \\
@@ -965,7 +965,7 @@ Yacc, Antlr, Flex, Bison, etc.  definitely still performs better, especially in 
 But derivatives:
 
 \begin{itemize}
-\item are a lot easier to implement and understand than LR(1), LL(1), LALR parsers
+\item are a lot easier to implement and understand than LR and LALR parsers
 \item are implemented using only functional techniques
 \item can validate the full set of Context Free Grammars, not just a subset.
 \end{itemize}
@@ -976,7 +976,7 @@ Yacc, Antlr, Flex, Bison, etc.  perform better.
 
 But derivatives:
 \begin{itemize}
-\item more intuitive than LR(1), LL(1), LALR parsers;
+\item more intuitive than LR and LALR parsers;
 \item only use functional techniques;
 \item recognize generalized Context Free Grammars, not just a subset.
 \end{itemize}
@@ -1044,6 +1044,10 @@ Nullability of a treenode is always false, just like a character.
 }
 
 \begin{haskellcode}
+data Expr = ...
+    TreeNode String Expr
+    ...
+
 deriv :: Expr -> Tree -> Expr
 deriv (TreeNode nameExpr childExpr) 
       (Node name children) = 
