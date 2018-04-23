@@ -457,7 +457,7 @@ I just think it is really cool.
 
 Here is one for the regular expression we just evaluated.
 
-Given a c we go the accepting state.
+Given a c we go to the accepting state.
 Then we accept any note in the pentatonic scale zero or more times.
 Otherwise the song is rejected.
 }
@@ -748,24 +748,23 @@ This has been solved using \cite{might2011parsing} functional concepts:
 \note{
 Laziness is when instead of evaluating a function and returning a value,
 we defer the evaluation and return a function that will return the value.
-Sorry it is kind of hard to demonstrate laziness in haskell, since it is lazy by default.
+I demonstrated this in Go, since most Haskellers are already familiar with this concept.
 }
 
 Strict:
 
 \begin{minted}{go}
-func eval(params ...) value {
-    ...
-    return value(...)
+func strictPlus(a, b int) int {
+    return a + b
 }
 \end{minted}
 
 Lazy:
 
 \begin{minted}{go}
-func lazyEval(params ...) func() value {
-    return func() value {
-        return eval(params)
+func lazyPlus(a, b int) func() int {
+    return func() int {
+        return a + b
     }
 }
 \end{minted}
@@ -1062,7 +1061,7 @@ nullable (TreeNode _ _) = False
 \end{haskellcode}
 \end{frame}
 
-\plain{\url{https://youtu.be/SvjSP2xYZm8} \url{katydid.github.io}}
+\plain{\url{https://youtu.be/SvjSP2xYZm8} \url{https://katydid.github.io}}
 
 \note{
 I think its time for another video by Ze Frank.
