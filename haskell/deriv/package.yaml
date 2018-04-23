@@ -22,6 +22,7 @@ description:         Please see the README on Github at <https://github.com/awal
 dependencies:
 - base >= 4.7 && < 5
 - recursion-schemes
+- containers
 
 library:
   source-dirs: src

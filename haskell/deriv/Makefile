@@ -1,6 +1,4 @@
-test: 
-	stack test
-
+.PHONY: run
 run:
 	stack build
 	stack exec deriv-exe
