@@ -1035,7 +1035,7 @@ The TreeNode pattern has a name expression and a child expression.
 To keep it basic I have made the name expression just a plain string.
 
 The Node has a label string and a list of child nodes.
-If the name expression equals the label string we have to take the derivative of the children.
+If the name expression equals the label string and  have to take the derivative of the children.
 Otherwise we return the empty set just like with a character.
 
 If the result of taking the derivative of the children is nullable we return the empty pattern else we return the empty set.
@@ -1044,20 +1044,17 @@ Nullability of a treenode is always false, just like a character.
 
 \begin{haskellcode}
 data Expr = ...
-    TreeNode String Expr
+    NodeExpr String Expr
     ...
 
 deriv :: Expr -> Tree -> Expr
-deriv (TreeNode nameExpr childExpr) 
-      (Node name children) = 
-  if nameExpr == name then
-     let childDeriv = foldl deriv childExpr children
-     in if nullable childDeriv
-        then Empty
-        else EmptySet
-  else EmptySet
+deriv (NodeExpr nameExpr childExpr) (Node name children) = 
+  if nameExpr == name && 
+        nullable (foldl deriv childExpr children)
+    then Empty
+    else EmptySet
     
-nullable (TreeNode _ _) = False
+nullable NodeExpr{} = False
 \end{haskellcode}
 \end{frame}
 
