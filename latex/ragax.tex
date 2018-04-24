@@ -299,16 +299,13 @@ deriv EmptyString _ = EmptySet
 deriv EmptySet _ = EmptySet
 deriv (Character a) c = if a == c 
   then EmptyString else EmptySet
-deriv (Concat r s) c =
-  let left = deriv r c
-      right = deriv s c
-  in if nullable r
-     then Or (Concat left s) right
-     else Concat left s
+deriv (Concat r s) c = if nullable r
+  then (deriv r c `Concat` s) `Or` deriv s c
+  else deriv r c `Concat` s
 deriv (ZeroOrMore r) c =
-  Concat (deriv r c) (ZeroOrMore r)
+  deriv r c `Concat` ZeroOrMore r
 deriv (Or r s) c =
-  Or (deriv r c) (deriv s c)
+  deriv r c `Or` deriv s c
 \end{haskellcode}
 \end{center}
 \end{frame}
@@ -419,6 +416,9 @@ ceg & \valid \\
 $\partial_c c\cdot(c|d|e|g|a)^{*}$ & = & $\varepsilon \cdot (c|d|e|g|a)^{*}$\\
 $\partial_e \varepsilon \cdot (c|d|e|g|a)^{*}$ & = & 
 $(\emptyset \cdot (c|d|e|g|a)^{*})\ |\ (\emptyset | \emptyset | \varepsilon | \emptyset | \emptyset) \cdot (c|d|e|g|a)^{*}$ \\
+& = & $\emptyset \ |\ (\emptyset | \emptyset | \varepsilon | \emptyset | \emptyset) \cdot (c|d|e|g|a)^{*}$ \\
+& = & $(\emptyset | \emptyset | \varepsilon | \emptyset | \emptyset) \cdot (c|d|e|g|a)^{*}$ \\
+& = & $\varepsilon \cdot (c|d|e|g|a)^{*}$ \\
 & = & $(c|d|e|g|a)^{*}$\\
 $\partial_g (c|d|e|g|a)^{*}$ & = & $(\emptyset | \emptyset | \emptyset | \varepsilon | \emptyset) \cdot (c|d|e|g|a)^{*}$\\
 & = & $(c|d|e|g|a)^{*}$\\
@@ -612,7 +612,7 @@ For example given G (e) you can choose P (g) if you want to ascend or R (d) if y
 \item Descent: S' D P G R S
 \end{itemize}
 \begin{itemize}
-\item Western Pentatonic scale
+\item Western Labeling Relative to c
 \item Ascent: c d e g a c$^{1}$
 \item Descent: c$^{1}$ a g e d c
 \end{itemize}

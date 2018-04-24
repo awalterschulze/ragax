@@ -69,12 +69,12 @@ deriv' c (Character a) = if a == c
     then emptyString else emptySet
 deriv' c (Concat (r, dr) (s, ds)) =
   if nullable r
-     then or (concat dr s) ds
-     else concat dr s
+     then (dr `concat` s) `or` ds
+     else dr `concat` s
 deriv' _ (ZeroOrMore (dr, r)) =
-  concat dr (zeroOrMore r)
+  dr `concat` zeroOrMore r
 deriv' _ (Or (_, dr) (_, ds)) =
-  or dr ds
+  dr `or` ds
 
 -- para :: (RegexF (Regex, Regex) -> Regex) -> Regex -> Regex
 

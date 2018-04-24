@@ -22,16 +22,13 @@ deriv EmptyString _ = EmptySet
 deriv EmptySet _ = EmptySet
 deriv (Character a) c = if a == c 
   then EmptyString else EmptySet
-deriv (Concat r s) c =
-  let left = deriv r c
-      right = deriv s c
-  in if nullable r
-     then Or (Concat left s) right
-     else Concat left s
+deriv (Concat r s) c = if nullable r
+  then (deriv r c `Concat` s) `Or` deriv s c
+  else deriv r c `Concat` s
 deriv (ZeroOrMore r) c =
-  Concat (deriv r c) (ZeroOrMore r)
+  deriv r c `Concat` ZeroOrMore r
 deriv (Or r s) c =
-  Or (deriv r c) (deriv s c)
+  deriv r c `Or` deriv s c
 
 match :: Regex -> String -> Bool
 match expr string = nullable (foldl deriv expr string)
