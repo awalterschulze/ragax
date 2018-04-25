@@ -8,7 +8,7 @@ import (
 )
 
 var interleaveStr = `
-#start = @ab
+#start = { @ab ; @cd }
 #ab = ([A, [@start, [B, @start]]] | empty)
 #cd = ([C, [@start, [D, @start]]] | empty)
 `
