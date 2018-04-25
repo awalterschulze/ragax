@@ -48,6 +48,11 @@ Expr
 		Expr: NewExpr($1.(*Expr)), 
 		Expr2: NewExpr($3.(*Expr)),
 	}, nil >>
+	| "{" Expr ";" Expr "}"   << &Expr{
+		Type: Interleave, 
+		Expr: NewExpr($1.(*Expr)), 
+		Expr2: NewExpr($3.(*Expr)),
+	}, nil >>
 	| "(" Expr ")" "*"        << &Expr{
 		Type: ZeroOrMore, 
 		Expr: NewExpr($1.(*Expr)),

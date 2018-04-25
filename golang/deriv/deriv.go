@@ -2,6 +2,7 @@ package deriv
 
 import (
 	"fmt"
+
 	. "github.com/awalterschulze/ragax/golang/ast"
 	"github.com/awalterschulze/ragax/golang/lexer"
 	"github.com/awalterschulze/ragax/golang/parser"
@@ -111,6 +112,24 @@ func (this *deriv) Deriv(e *Expr, c rune) *Expr {
 				Expr2: e.Expr2,
 			})
 		}
+	case Interleave:
+		return this.mem.Set(e, c, &Expr{
+			Type: Or,
+			Expr: NewExpr(&Expr{
+				Type: Interleave,
+				Expr: NewLazy(func() *Expr {
+					return this.Sderiv(e.Expr.Expr(), c)
+				}),
+				Expr2: e.Expr2,
+			}),
+			Expr2: NewExpr(&Expr{
+				Type: Interleave,
+				Expr: NewLazy(func() *Expr {
+					return this.Sderiv(e.Expr2.Expr(), c)
+				}),
+				Expr2: e.Expr,
+			}),
+		})
 	case ZeroOrMore:
 		return this.mem.Set(e, c, &Expr{
 			Type: Concat,
@@ -169,6 +188,10 @@ func (this *nullable) Nullable(l *LazyExpr) bool {
 		this.mem[l] = v
 		return v
 	case Concat:
+		v := this.Nullable(e.Expr) && this.Nullable(e.Expr2)
+		this.mem[l] = v
+		return v
+	case Interleave:
 		v := this.Nullable(e.Expr) && this.Nullable(e.Expr2)
 		this.mem[l] = v
 		return v
@@ -233,6 +256,25 @@ func Simplify(defs Defs, e *Expr) *Expr {
 			return emptyset
 		}
 		return &Expr{Type: Concat, Expr: NewExpr(expr1), Expr2: NewExpr(expr2)}
+	case Interleave:
+		if e.Expr.IsLazy() || e.Expr2.IsLazy() {
+			return e
+		}
+		expr1 := Simplify(defs, e.Expr.Expr())
+		expr2 := Simplify(defs, e.Expr2.Expr())
+		if isEmptySet(expr1) {
+			return emptyset
+		}
+		if isEmptySet(expr2) {
+			return emptyset
+		}
+		if isEmpty(expr1) {
+			return expr2
+		}
+		if isEmpty(expr2) {
+			return expr1
+		}
+		return &Expr{Type: Interleave, Expr: NewExpr(expr1), Expr2: NewExpr(expr2)}
 	case ZeroOrMore:
 		if e.Expr.IsLazy() {
 			return e

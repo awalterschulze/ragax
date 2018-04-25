@@ -31,6 +31,7 @@ var (
 	ZeroOrMore = Type(3)
 	Reference  = Type(4)
 	Value      = Type(5)
+	Interleave = Type(6)
 )
 
 type LazyExpr struct {
@@ -81,6 +82,8 @@ func (e *Expr) String() string {
 		return "( " + e.Expr.String() + " | " + e.Expr2.String() + " )"
 	case Concat:
 		return "[" + e.Expr.String() + ", " + e.Expr2.String() + "]"
+	case Interleave:
+		return "{" + e.Expr.String() + "; " + e.Expr2.String() + "}"
 	case ZeroOrMore:
 		return "(" + e.Expr.String() + ")*"
 	case Reference:
