@@ -19,11 +19,13 @@ The code is split into 2 projects:
 
 ## Locations
 
-I have given this talk 5 times:
+I have given this talk 7 times:
 
-  - [Scarborough, Cape Town, South Africa](http://www.meetup.com/Cape-Town-Functional-Programmers/events/229984534/) - April 2016
+  - [Functional Programming Cape Town Meetup](http://www.meetup.com/Cape-Town-Functional-Programmers/events/229984534/) Scarborough, Cape Town, South Africa - April 2016
   - Technopark, Stellenbosch, South Africa - May 2016
-  - Apeldoorn, Netherlands - May 2016
-  - Amsterdam, Netherlands - May 2016
+  - Jexia, Apeldoorn, The Netherlands - May 2016
+  - eBay Office, Amsterdam, The Netherlands - May 2016
   - [Stellenbosch University, Stellenbosch, South Africa](http://www.meetup.com/Stellenbosch-Computer-Science-Meetup/events/231041690/) - June 2016
+  - eBay Office, Amsterdam, The Netherlands - April 2018
+  - [Functional Programming Amsterdam Meetup](https://www.meetup.com/fp-ams/events/249766439/), Amsterdam, The Netherlands - May 2018
 
