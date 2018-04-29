@@ -15,12 +15,12 @@ import Data.Functor.Foldable (cata, unfix, Fix(..), para)
 
 type Regex = Fix RegexF
 
-data RegexF a = EmptySet
+data RegexF r = EmptySet
   | EmptyString
   | Character Char
-  | Concat a a
-  | ZeroOrMore a
-  | Or a a
+  | Concat r r
+  | ZeroOrMore r
+  | Or r r
   deriving Functor
 
 emptySet :: Regex
@@ -41,7 +41,7 @@ zeroOrMore a = Fix (ZeroOrMore a)
 or :: Regex -> Regex -> Regex
 or a b = Fix (Or a b)
 
-type Algebra f a = f a -> a
+type Algebra f r = f r -> r
 
 type NullableAlgebra = Algebra RegexF Bool
 
@@ -58,7 +58,7 @@ nullable' (Or a b) = a || b
 nullable :: Regex -> Bool
 nullable = cata nullable'
 
-type RAlgebra f a = f (Fix f, a) -> a
+type RAlgebra f r = f (Fix f, r) -> r
 
 type DeriveRAlgebra = RAlgebra RegexF Regex
 

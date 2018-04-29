@@ -16,12 +16,12 @@ import qualified Data.Tree as Tree
 
 type Pattern = Fix PatternF
 
-data PatternF a = EmptySet
+data PatternF r = EmptySet
   | Empty
-  | NodeExpr String a
-  | Concat a a
-  | ZeroOrMore a
-  | Or a a
+  | NodeExpr String r
+  | Concat r r
+  | ZeroOrMore r
+  | Or r r
   deriving Functor
 
 emptySet :: Pattern
@@ -42,7 +42,7 @@ zeroOrMore a = Fix (ZeroOrMore a)
 or :: Pattern -> Pattern -> Pattern
 or a b = Fix (Or a b)
 
-type Algebra f a = f a -> a
+type Algebra f r = f r -> r
 
 type NullableAlgebra = Algebra PatternF Bool
 
@@ -57,7 +57,7 @@ nullable' (Or a b) = a || b
 nullable :: Pattern -> Bool
 nullable = cata nullable'
 
-type RAlgebra f a = f (Fix f, a) -> a
+type RAlgebra f r = f (Fix f, r) -> r
 
 type DeriveRAlgebra = RAlgebra PatternF Pattern
 
