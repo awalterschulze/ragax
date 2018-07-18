@@ -23,9 +23,9 @@
 
 \title{Ragax: Ragalur Expressions}
 \subtitle{Using derivatives to validate Indian Classical Music}
-\date{2 May 2018}
+\date{26 July 2018}
 \author{Walter Schulze}
-\institute{Amsterdam Functional Programming Meetup}
+% \institute{Amsterdam Functional Programming Meetup}
 
 \usepackage{xcolor}
 \def\valid{${\color{mLightGreen} \checkmark}$}
@@ -733,14 +733,16 @@ We are going to solve this problem with 3 functional concepts.
 \item least fixed point
 \end{itemize}
 
-I like to call this these the: brake, handbrake and gas respectively.
+Laziness will turn our infinite loop into an infinite tree.
+Memoization will turn our infinite tree into a graph, by rolling it up.
+And last but not least, our least fixed point, will return a value from the graph.
 }
 
 This has been solved using \cite{might2011parsing} functional concepts:
 \begin{itemize}
-\item laziness - The Brake
-\item memoization - The Handbrake
-\item least fixed point - The Gas
+\item Laziness: Infinite Loop $\rightarrow$ Infinite Tree
+\item Memoization: Infinite Tree $\rightarrow$ Graph
+\item Least Fixed Point: Graph $\rightarrow$ Value
 \end{itemize}
 \end{frame}
 
@@ -770,14 +772,14 @@ func lazyPlus(a, b int) func() int {
 \end{minted}
 \end{frame}
 
-\begin{frame}{Laziness - The Brake}
+\begin{frame}{Laziness - Infinite Tree}
 
 \note{
 I used the lambda symbol here to represent a thunk or function that will return a value when called with no parameters.
 
 So instead of storing the field values of concat, or and zero or more we rather store functions that when called will return the value of the field.
 
-This allows us to avoid any recursion until the value is needed.
+This allows us to avoid any recursion until the value is needed, but it leaves us with an infinite tree to evaluate.
 
 The j is used as shorthand to write concat in a single line.
 
@@ -814,14 +816,14 @@ $\partial_n \#S$ &=& $\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ 
 
 \end{frame}
 
-\begin{frame}{Memoization - The Handbrake}
+\begin{frame}{Memoization - Graph}
 \note{
 Eventually nullability is going to be called and this won't be stopped by laziness alone.
 It will result in the execution of a lazy derivative function.
+This results in us traversing our infinite tree.
 
 The point of these equations are that we still need the nullability of the derivative of S to calculate the nullability of the derivative of S.
-
-Memoizing helps to close the loop.
+Memoizing helps to roll up this tree, into a graph.
 
 It stops the recursive execution of the derivative by only calculating the derivative once and returning the same lazy function for following executions.
 }
@@ -863,7 +865,7 @@ $\partial_n @S$ &=& $\lambda(\partial_n(@S \cdot (S \cdot ( @R\ |\ @D ))))\ |\ \
 \note{
 Memoizing a function is when you cache the results for the previous inputs and so only calculate the value for the same inputs once.
 Just like caching it is typically a great way to optimize your code.
-But in this case, we are using it to close a loop.
+But in this case, we are using it to roll up a loop.
 Unfortunately it is not enough. We need another tool.
 }
 
@@ -921,12 +923,12 @@ least fixed point = $\emptyset$
 \end{center}
 \end{frame}
 
-\begin{frame}{Least Fixed Point - The Gas}
+\begin{frame}{Least Fixed Point - Graph}
 
 \note{
 Eventually nullable still needs to return a true or a false.
 
-We can use our least fixed point to return a derivative of empty set when nullable revisits the same lazy expression.
+We can use our least fixed point to return a derivative of empty set when nullable revisits the same lazy expression in our graph.
 }
 
 Nullable is relentless:
