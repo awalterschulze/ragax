@@ -5,6 +5,34 @@ The Brzozowski Derivative is a more intuitive way to match strings using Regular
 Functional concepts such as Laziness, Memoization and Least Fixed Point can enhance the capabilities of Derivatives to even validate Recursive Regular Expressions (Context Free Grammars). 
 Finally we'll see what I use derivatives for.
 
+## Videos
+
+After giving the talk several times, I have turned it into a series of videos:
+
+### Brzozowski's Derivatives of Regular Expressions (1/4)
+
+<a href="https://www.youtube.com/watch?v=k9linVmyIiE&list=PLYwF9EIrl42S9ldgii7kfBEIHPle7PqMk&index=1" target="_blank">
+ <img src="https://img.youtube.com/vi/k9linVmyIiE/maxres1.jpg" alt="Watch the video" width="480" border="10" />
+</a>
+
+### Ragax - Extending Regex Derivatives to Context Free Grammars (2/4)
+
+<a href="https://www.youtube.com/watch?v=O3aO5eskiLc&list=PLYwF9EIrl42S9ldgii7kfBEIHPle7PqMk&index=2" target="_blank">
+ <img src="https://img.youtube.com/vi/O3aO5eskiLc/maxres2.jpg" alt="Watch the video" width="480" border="10" />
+</a>
+
+### Generating Ragas using Brzozowski Derivatives for Regular Expressions with Ableton Live and Max MSP (3/4)
+
+<a href="https://www.youtube.com/watch?v=Jg8eFh96wPU&list=PLYwF9EIrl42S9ldgii7kfBEIHPle7PqMk&index=3" target="_blank">
+ <img src="https://img.youtube.com/vi/Jg8eFh96wPU/maxres2.jpg" alt="Watch the video" width="480" border="10" />
+</a>
+
+### Relaxing Raga (Indian Classical Music) Computer Generated (4/4)
+
+<a href="https://www.youtube.com/watch?v=1now1LySky4&list=PLYwF9EIrl42S9ldgii7kfBEIHPle7PqMk&index=4" target="_blank">
+ <img src="https://img.youtube.com/vi/1now1LySky4/maxres1.jpg" alt="Watch the video" width="480" border="10" />
+</a>
+
 ## Slides
 
 The [slides](https://github.com/awalterschulze/ragax/raw/gh-pages/latex/ragax.pdf) are located in the latex folder.
