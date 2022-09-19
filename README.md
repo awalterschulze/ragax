@@ -7,12 +7,18 @@ Finally we'll see what I use derivatives for.
 
 ## Videos
 
-After giving the talk several times, I have turned it into a series of videos:
+After giving the talk several times, I have turned it into a series of videos and blog posts:
 
 ### Brzozowski's Derivatives of Regular Expressions (1/4)
 
 <a href="https://www.youtube.com/watch?v=k9linVmyIiE&list=PLYwF9EIrl42S9ldgii7kfBEIHPle7PqMk&index=1" target="_blank">
  <img src="https://img.youtube.com/vi/k9linVmyIiE/maxres1.jpg" alt="Watch the video" width="480" border="10" />
+</a>
+
+#### Blog Post
+
+<a href="https://medium.com/@awalterschulze/how-to-take-the-derivative-of-a-regular-expression-explained-2e7cea15028d">
+ How to take the Derivative of a Regular Expression explained
 </a>
 
 ### Ragax - Extending Regex Derivatives to Context Free Grammars (2/4)
